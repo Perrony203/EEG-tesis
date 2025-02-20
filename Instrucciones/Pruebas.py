@@ -1,0 +1,157 @@
+from PIL import Image, ImageTk  
+from datetime import datetime  
+import tkinter.messagebox 
+from tkinter.ttk import * 
+import multiprocessing
+import subprocess
+import tkinter  
+import random
+import time
+import csv
+import sys
+import os
+
+class adquisicion():
+    
+    def __init__(self):
+        self.marcador = 0
+        
+    def set_marcador(self, val):
+        self.marcador = val
+        
+    def get_marcador(self):
+        #print(str(self.marcador))
+        self.marcador = self.marcador
+        
+class BrainInterface():
+        
+    def __init__(self, ventana):  
+        self.marcadores = []  
+        self.ventana = ventana
+        self.ventana.title("Interfaz de adquisición cerebral")
+        self.ventana.configure(background="black")
+        self.width = self.ventana.winfo_screenwidth()               
+        self.height = self.ventana.winfo_screenheight()
+        self.ventana.geometry('%dx%d+%d+%d' % (self.width,self.height,-10,0))
+        self.s = Style()
+        self.s.configure('Principal.TFrame', background='black')
+        self.frame = Frame(self.ventana,style='Principal.TFrame')
+        self.frame.pack()
+        self.frame.place(height=self.height, width=self.width,x=-10,y=0)
+
+        self.pie_der = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Imágenes\F_PD.png"))
+        self.pie_izq = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Imágenes\F_PI.png"))
+        self.brazo_der = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Imágenes\F_BD.png"))
+        self.brazo_izq = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Imágenes\F_BI.png"))
+        self.cruz = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Imágenes\cruz.PNG"))
+        self.black = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Imágenes\Fondo.PNG"))
+
+        self.imagen = tkinter.Label(self.frame)
+        self.imagen.pack()
+        self.imagen.place(relx = 0.5, rely = 0.5, anchor = 'center')   
+        self.imagen.config(fg="white", bg="black")         
+        
+        self.var = tkinter.IntVar()
+        self.button = tkinter.Button(self.ventana, text="Iniciar prueba", command=lambda: self.var.set(1)) 
+        self.button.config(height=3, width=20, font=("bookman",20), fg="black", bg="white")
+        self.button.place(relx=.5, rely=.5, anchor="center")          
+
+        self.tiempo = 0
+        self.formatted_time = 0;
+        
+        self.datos = [];
+        
+        # Ruta a la carpeta del archivo C# de adquisición de datos
+        #self.ruta_adquisicion = "D:\\Universidad\\Trabajo de grado\\Desarrollo prototipo\\Código\\Instrucciones\\Adquisición pura"  
+        self.ruta_grafica = "D:\\Universidad\\Trabajo de grado\\Desarrollo prototipo\\Código\\Instrucciones\\graficacion_rt.py"    
+        #self.comando_adqui = ["dotnet", "run"]
+        #self.proceso_adqui = 1;        
+                
+    def finish_program(self):
+        #self.proceso_adqui.terminate()
+        tkinter.messagebox.showinfo("Finalización","Recolección finalizada, muchas gracias por su colaboración")        
+        #Guarda el archivo con las instrucciones y los tiempos de aparición 
+        # with open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Registros almacenados\Aparición imagenes\Instrucciones_1.csv", mode='w', newline='') as file:
+        #     print("File saved, register done succesfully!")
+        #     writer = csv.writer(file, delimiter=';')            
+        #     writer.writerow(['Time', 'Instruction'])
+        #     writer.writerows(self.datos)                            
+          
+        self.ventana.destroy()        
+
+    def clear(self):        
+        self.imagen.config(image = self.black)
+        self.imagen.update()
+
+    def cross(self, callback):        
+        self.imagen.config(image = self.cruz)     
+        self.imagen.update()
+        self.ventana.after(random.randint(250, 450), callback)            
+            
+    def training(self):   
+        #Correr el código de C# de adquisición de datos         
+        #self.proceso_adqui = subprocess.Popen(self.comando_adqui, cwd=self.ruta_adquisicion)
+        #Correr el código de python de la graficación 
+        subprocess.run(["python", self.ruta_grafica])      
+        print("Reading training data...")       
+        #Iniciar el proceso de envío de instrucciones            
+        self.button.place_forget()                     
+        self.ventana.after(3000, lambda:self.clear())       
+        lista = [1,2,3,4]       
+        self.ventana.after(1000, lambda:self.new_movement(lista, 0, 0))        
+        
+    def register(self): 
+        self.imagen.config(text="Inicio del registro", font = ("bookman",20), fg="white", bg="black")
+        self.imagen.update()         
+        self.ventana.after(1000, lambda:self.clear())        
+        lista = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3]
+        random.shuffle(lista)
+        print("Reading test data...")        
+        self.ventana.after(1000, lambda:self.new_movement(lista, 0, 1))       
+            
+    def new_movement(self, lista, pos, fin):
+        if pos < len(lista):
+            i = pos           
+            self.tiempo = datetime.now()                          
+            if lista[i] == 1:
+                self.imagen.config(image=self.pie_der)    
+                self.imagen.update()                                                
+                self.formatted_time = self.tiempo.strftime("%Y-%m-%d %H:%M:%S.%f")
+                self.datos.append((str(self.formatted_time),str(lista[i])))
+            elif lista[i] == 2:
+                self.imagen.config(image=self.pie_izq) 
+                self.imagen.update()  
+                self.formatted_time = self.tiempo.strftime("%Y-%m-%d %H:%M:%S.%f")     
+                self.datos.append((str(self.formatted_time),str(lista[i])))
+            elif lista[i] == 3:
+                self.imagen.config(image=self.brazo_izq)  
+                self.imagen.update()      
+                self.formatted_time = self.tiempo.strftime("%Y-%m-%d %H:%M:%S.%f")
+                self.datos.append((str(self.formatted_time),str(lista[i])))
+            else:
+                self.imagen.config(image=self.brazo_der)
+                self.imagen.update()
+                self.formatted_time = self.tiempo.strftime("%Y-%m-%d %H:%M:%S.%f")
+                self.datos.append((str(self.formatted_time),str(lista[i])))
+                
+            self.ventana.after(200, self.clear)
+            self.ventana.after(1800, lambda: self.cross(lambda:self.new_movement(lista, i+1, fin))) 
+        else:
+            if fin == 0:
+                self.ventana.after(3000, lambda:self.register())
+            else:
+                self.ventana.after(1000, lambda:self.finish_program())
+                
+if __name__ == "__main__":     
+    ventana = tkinter.Tk()     
+    BI = BrainInterface(ventana)  
+    ad = adquisicion()      
+    BI.button.wait_variable(BI.var)
+    p1 = multiprocessing.Process(target=BI.training(), args=(None,))    
+    p2 = multiprocessing.Process(target=ad.get_marcador(), args=(None,))
+    p2.start()        
+    p1.start()    
+    p1.join() 
+    p2.join()     
+    ventana.mainloop()    
+    

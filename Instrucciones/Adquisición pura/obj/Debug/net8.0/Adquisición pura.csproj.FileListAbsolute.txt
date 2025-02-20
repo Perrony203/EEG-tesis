@@ -1,0 +1,24 @@
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\obj\Debug\net8.0\Adquisición pura.GeneratedMSBuildEditorConfig.editorconfig
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\obj\Debug\net8.0\Adquisición pura.AssemblyInfoInputs.cache
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\obj\Debug\net8.0\Adquisición pura.AssemblyInfo.cs
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\obj\Debug\net8.0\Adquisición pura.csproj.CoreCompileInputs.cache
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\bin\Debug\net8.0\Adquisición pura.exe
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\bin\Debug\net8.0\Adquisición pura.deps.json
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\bin\Debug\net8.0\Adquisición pura.runtimeconfig.json
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\bin\Debug\net8.0\Adquisición pura.dll
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\bin\Debug\net8.0\Adquisición pura.pdb
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\bin\Debug\net8.0\System.IO.Ports.dll
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\bin\Debug\net8.0\runtimes\linux-arm\native\libSystem.IO.Ports.Native.so
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\bin\Debug\net8.0\runtimes\linux-arm64\native\libSystem.IO.Ports.Native.so
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\bin\Debug\net8.0\runtimes\linux-x64\native\libSystem.IO.Ports.Native.so
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\bin\Debug\net8.0\runtimes\osx-arm64\native\libSystem.IO.Ports.Native.dylib
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\bin\Debug\net8.0\runtimes\osx-x64\native\libSystem.IO.Ports.Native.dylib
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\bin\Debug\net8.0\runtimes\unix\lib\net8.0\System.IO.Ports.dll
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.IO.Ports.dll
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\obj\Debug\net8.0\Adquisición pura.csproj.AssemblyReference.cache
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\obj\Debug\net8.0\Adquisic.12E17545.Up2Date
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\obj\Debug\net8.0\Adquisición pura.dll
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\obj\Debug\net8.0\refint\Adquisición pura.dll
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\obj\Debug\net8.0\Adquisición pura.pdb
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\obj\Debug\net8.0\Adquisición pura.genruntimeconfig.cache
+D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Adquisición pura\obj\Debug\net8.0\ref\Adquisición pura.dll
