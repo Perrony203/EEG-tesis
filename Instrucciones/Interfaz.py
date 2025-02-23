@@ -34,12 +34,12 @@ class BrainInterface():
         self.frame.pack()
         self.frame.place(height=self.height, width=self.width,x=-10,y=0)
 
-        self.pie_der = ImageTk.PhotoImage(Image.open("Imágenes\F_PD.png"))
-        self.pie_izq = ImageTk.PhotoImage(Image.open("Imágenes\F_PI.png"))
-        self.brazo_der = ImageTk.PhotoImage(Image.open("Imágenes\F_BD.png"))
-        self.brazo_izq = ImageTk.PhotoImage(Image.open("Imágenes\F_BI.png"))
-        self.cruz = ImageTk.PhotoImage(Image.open("Imágenes\cruz.PNG"))
-        self.black = ImageTk.PhotoImage(Image.open("Imágenes\Fondo.PNG"))
+        self.pie_der = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Imágenes\F_PD.png"))
+        self.pie_izq = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Imágenes\F_PI.png"))
+        self.brazo_der = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Imágenes\F_BD.png"))
+        self.brazo_izq = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Imágenes\F_BI.png"))
+        self.cruz = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Imágenes\cruz.PNG"))
+        self.black = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Imágenes\Fondo.PNG"))
 
         self.imagen = tkinter.Label(self.frame)
         self.imagen.pack()

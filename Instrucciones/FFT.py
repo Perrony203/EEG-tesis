@@ -19,7 +19,7 @@ port = 5000         # Puerto del servidor
 closing = False
 
 # Ruta a la carpeta del archivo C# de adquisición de datos
-ruta_adqui = "D:\\Universidad\\Trabajo de grado\\Desarrollo prototipo\\Código\\Instrucciones\\Adquisición pura"       
+ruta_adqui = "D:\\Universidad\\Trabajo de grado\\Desarrollo prototipo\\Código\\EEG-tesis\\Instrucciones\\Adquisición pura"       
 comando_adqui = ["dotnet", "run"]
 
 # Inicializar el proceso de adquisición

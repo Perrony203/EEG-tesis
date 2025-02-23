@@ -213,3 +213,4 @@ ani = animation.FuncAnimation(
 
 fig.canvas.mpl_connect('close_event', handle_exit)
 plt.show()
+

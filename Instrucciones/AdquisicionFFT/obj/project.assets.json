@@ -1735,11 +1735,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Universidad\\Trabajo de grado\\Desarrollo prototipo\\Código\\Instrucciones\\AdquisicionFFT\\AdquisicionFFT.csproj",
+      "projectUniqueName": "D:\\Universidad\\Trabajo de grado\\Desarrollo prototipo\\Código\\EEG-tesis\\Instrucciones\\AdquisicionFFT\\AdquisicionFFT.csproj",
       "projectName": "AdquisicionFFT",
-      "projectPath": "D:\\Universidad\\Trabajo de grado\\Desarrollo prototipo\\Código\\Instrucciones\\AdquisicionFFT\\AdquisicionFFT.csproj",
+      "projectPath": "D:\\Universidad\\Trabajo de grado\\Desarrollo prototipo\\Código\\EEG-tesis\\Instrucciones\\AdquisicionFFT\\AdquisicionFFT.csproj",
       "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-      "outputPath": "D:\\Universidad\\Trabajo de grado\\Desarrollo prototipo\\Código\\Instrucciones\\AdquisicionFFT\\obj\\",
+      "outputPath": "D:\\Universidad\\Trabajo de grado\\Desarrollo prototipo\\Código\\EEG-tesis\\Instrucciones\\AdquisicionFFT\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config"

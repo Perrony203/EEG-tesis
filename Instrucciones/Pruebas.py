@@ -39,12 +39,12 @@ class BrainInterface():
         self.frame.pack()
         self.frame.place(height=self.height, width=self.width,x=-10,y=0)
 
-        self.pie_der = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Imágenes\F_PD.png"))
-        self.pie_izq = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Imágenes\F_PI.png"))
-        self.brazo_der = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Imágenes\F_BD.png"))
-        self.brazo_izq = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Imágenes\F_BI.png"))
-        self.cruz = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Imágenes\cruz.PNG"))
-        self.black = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Imágenes\Fondo.PNG"))
+        self.pie_der = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Imágenes\F_PD.png"))
+        self.pie_izq = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Imágenes\F_PI.png"))
+        self.brazo_der = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Imágenes\F_BD.png"))
+        self.brazo_izq = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Imágenes\F_BI.png"))
+        self.cruz = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Imágenes\cruz.PNG"))
+        self.black = ImageTk.PhotoImage(Image.open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Imágenes\Fondo.PNG"))
 
         self.imagen = tkinter.Label(self.frame)
         self.imagen.pack()
@@ -59,25 +59,36 @@ class BrainInterface():
         self.tiempo = 0
         self.formatted_time = 0;
         
-        self.datos = [];
+        self.datos = [];        
         
-        # Ruta a la carpeta del archivo C# de adquisición de datos
-        #self.ruta_adquisicion = "D:\\Universidad\\Trabajo de grado\\Desarrollo prototipo\\Código\\Instrucciones\\Adquisición pura"  
-        self.ruta_grafica = "D:\\Universidad\\Trabajo de grado\\Desarrollo prototipo\\Código\\Instrucciones\\graficacion_rt.py"    
-        #self.comando_adqui = ["dotnet", "run"]
-        #self.proceso_adqui = 1;        
+        self.ruta_grafica = "D:\\Universidad\\Trabajo de grado\\Desarrollo prototipo\\Código\\EEG-tesis\\Instrucciones\\FFT_micro.py"
+        self.proceso_adqui = 0;
+    
+    def generar_nombre_autoincremental(self, directorio=r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\Aparición imagenes", base_nombre="Instrucciones"):        
+        if not os.path.exists(directorio):
+            print("No directory")
+            os.makedirs(directorio)
+            
+        archivos = [os.path.splitext(f)[0] for f in os.listdir(directorio) if f.startswith(base_nombre) and os.path.splitext(f)[0][len(base_nombre):].lstrip("_").isdigit()]         
+        if archivos:
+            numeros_existentes = [int(f[len(base_nombre):].lstrip("_")) for f in archivos]
+            nuevo_numero = max(numeros_existentes) + 1
+        else:
+            nuevo_numero = 1
+
+        return os.path.join(directorio, f"{base_nombre}_{nuevo_numero}.csv")
                 
     def finish_program(self):
         #self.proceso_adqui.terminate()
         tkinter.messagebox.showinfo("Finalización","Recolección finalizada, muchas gracias por su colaboración")        
         #Guarda el archivo con las instrucciones y los tiempos de aparición 
-        # with open(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Registros almacenados\Aparición imagenes\Instrucciones_1.csv", mode='w', newline='') as file:
-        #     print("File saved, register done succesfully!")
-        #     writer = csv.writer(file, delimiter=';')            
-        #     writer.writerow(['Time', 'Instruction'])
-        #     writer.writerows(self.datos)                            
+        with open(self.generar_nombre_autoincremental(), mode='w', newline='') as file:
+            print("File saved, register done succesfully!")
+            writer = csv.writer(file, delimiter=';')            
+            writer.writerow(['Time', 'Instruction'])
+            writer.writerows(self.datos)                            
           
-        self.ventana.destroy()        
+        self.ventana.destroy()
 
     def clear(self):        
         self.imagen.config(image = self.black)
@@ -88,11 +99,9 @@ class BrainInterface():
         self.imagen.update()
         self.ventana.after(random.randint(250, 450), callback)            
             
-    def training(self):   
-        #Correr el código de C# de adquisición de datos         
-        #self.proceso_adqui = subprocess.Popen(self.comando_adqui, cwd=self.ruta_adquisicion)
+    def training(self):           
         #Correr el código de python de la graficación 
-        subprocess.run(["python", self.ruta_grafica])      
+        #self.proceso_adqui = subprocess.run(["python", self.ruta_grafica])      
         print("Reading training data...")       
         #Iniciar el proceso de envío de instrucciones            
         self.button.place_forget()                     
@@ -104,7 +113,7 @@ class BrainInterface():
         self.imagen.config(text="Inicio del registro", font = ("bookman",20), fg="white", bg="black")
         self.imagen.update()         
         self.ventana.after(1000, lambda:self.clear())        
-        lista = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3]
+        lista = [1,1]
         random.shuffle(lista)
         print("Reading test data...")        
         self.ventana.after(1000, lambda:self.new_movement(lista, 0, 1))       

@@ -10,7 +10,7 @@ class Program{
         string portName = "COM12";
         int baudRate = 4000000;
         
-        string filePath = @"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\Instrucciones\Registros almacenados\Datos EEG\Datos_1.csv"; 
+        string filePath = @"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\Datos EEG\Datos_1.csv"; 
 
         int port = 5000;
         TcpListener server = new TcpListener(IPAddress.Any, port);

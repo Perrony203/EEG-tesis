@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "gilu+TedsC0=",
+  "dgSpecHash": "BqTqeQ9kEfQ=",
   "success": true,
-  "projectFilePath": "D:\\Universidad\\Trabajo de grado\\Desarrollo prototipo\\Código\\Instrucciones\\AdquisicionFFT\\AdquisicionFFT.csproj",
+  "projectFilePath": "D:\\Universidad\\Trabajo de grado\\Desarrollo prototipo\\Código\\EEG-tesis\\Instrucciones\\AdquisicionFFT\\AdquisicionFFT.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\User\\.nuget\\packages\\runtime.android-arm.runtime.native.system.io.ports\\9.0.2\\runtime.android-arm.runtime.native.system.io.ports.9.0.2.nupkg.sha512",
     "C:\\Users\\User\\.nuget\\packages\\runtime.android-arm64.runtime.native.system.io.ports\\9.0.2\\runtime.android-arm64.runtime.native.system.io.ports.9.0.2.nupkg.sha512",
