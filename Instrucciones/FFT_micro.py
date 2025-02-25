@@ -59,6 +59,7 @@ data_channels = {i: deque(maxlen=MAX_BUFFER_SIZE) for i in range(5)}
 fft_matrix = np.zeros((5, 128))
 prev_fft = np.zeros((5, 128))  # Para detectar cambios
 fft_bins = np.linspace(0, SAMPLE_RATE//2, 128)  # Eje de frecuencias
+valoresString = []
 
 def pad_array_random(arr, expected_length):
     first = arr[:5]
@@ -80,25 +81,26 @@ def pad_array_random(arr, expected_length):
     return first + new_middle + [last]
 
 def receive_data():
-    global data_channels, fft_matrix, prev_fft, full_operation
+    global data_channels, fft_matrix, prev_fft, full_operation, valoresString
     while not closing:
         try:
+            valoresString.clear() 
             line = ser.readline().decode('utf-8').strip()
-            if line:                        
-                valoresString = line.split(',')
+            valoresString.append(line)
+            if line == "I":
+                while line != "NEW" and line != "OLD":
+                    line = ser.readline().decode('utf-8').strip()
+                    valoresString.append(line)                                   
+                
                 if valoresString[0] == "I":
                     valoresString = valoresString[1:]
                     if len(valoresString) == 6 and valoresString[-1] == "OLD":
                         valoresString = valoresString[:-1]
                         
-                        try:
-                            # Convertir valores a floats
-                            valores = [float(v.replace(',', '.')) for v in valoresString]
+                        try:                            
+                            valores = [float(v.replace(',', '.')) for v in valoresString] 
+                            time_data = valores                                 
                             
-                            # Extraer componentes
-                            time_data = valores     
-                            
-                            # Actualizar datos de tiempo (siempre)
                             with data_lock:
                                 for i in range(5):
                                     data_channels[i].append(time_data[i])                   
@@ -106,20 +108,18 @@ def receive_data():
                         except (ValueError, IndexError):
                             continue
                         
-                    elif valoresString[-1] == "NEW":                        
-                        valoresString = valoresString[:-1] 
+                    elif valoresString[-1] == "NEW":       
+                        valoresString = valoresString[:-1]
+                        
                         if len(valoresString) != 645:
-                            valoresString = pad_array_random(valoresString,645)
-                            
+                            valoresString = pad_array_random(valoresString, 645)
+                        
                         try:
-                            # Convertir valores a floats
                             valores = [float(v.replace(',', '.')) for v in valoresString]
                             
-                            # Extraer componentes
                             time_data = valores[:5]
                             fft_matrix = np.array(valores[5:645]).reshape(5, 128)    
                             
-                            # Actualizar datos de tiempo (siempre)
                             with data_lock:
                                 for i in range(5):
                                     data_channels[i].append(time_data[i])  
@@ -213,3 +213,4 @@ ani = animation.FuncAnimation(
 
 fig.canvas.mpl_connect('close_event', handle_exit)
 plt.show()
+
