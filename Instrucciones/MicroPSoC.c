@@ -585,14 +585,15 @@ int main(void){
 					/* Format and store data in a real number form */
 					ProcessValues(valoresReales, chs2Read, CHS);
 
+					/* Sgnal for a communication start*/
+					printf("I\n");
+					fflush(stdout);
+
 					/* Transmit data to PC to be stored and plotted*/
-					printf("I,%.6f,%.6f,%.6f,%.6f,%.6f,",
-							valoresReales[0],
-							valoresReales[1],
-							valoresReales[2],
-							valoresReales[3],
-							valoresReales[4]
-						  );
+					for(int i = 0; i < NCHANNELS; i++){
+						printf("%.6f\n", valoresReales[i]);
+						fflush(stdout);
+					}
 
 					/* Verify if every FFT is ready */
 					if(allFFTReady(fft_ready, NCHANNELS)){
@@ -601,17 +602,15 @@ int main(void){
 						for (int i = 0; i < NCHANNELS; i++){
 							fft_ready[i] = false;
 							for(int j = 0; j < FFT_BUFFER_SIZE/2; j++){
-								if((i == NCHANNELS - 1) && (j == (FFT_BUFFER_SIZE/2) - 1)){
-									printf("%.6f,NEW\r\n", fft_value[i][j]);
-									fflush(stdout);
-								}else{
-									printf("%.6f,", fft_value[i][j]);
-								}
+								printf("%.6f\n", fft_value[i][j]);
+								fflush(stdout);
 							}
 						}
+						printf("NEW\n");
+						fflush(stdout);
 						count = 0;
 					}else{
-						printf("OLD\r\n");
+						printf("OLD\n");
 						fflush(stdout);
 					}
 
