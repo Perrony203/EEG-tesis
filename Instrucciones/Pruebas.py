@@ -68,7 +68,7 @@ class BrainInterface():
         self.ruta_datos = r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\Datos EEG"
         self.ruta_estimulos = r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\Aparición imagenes"
         self.ruta_SVM = r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\SVM characteristics"
-            
+               
     def monitor_child(self):
         exitcode = self.proceso_adqui.wait()
         if exitcode == 0:
@@ -163,9 +163,7 @@ class BrainInterface():
         self.imagen.update()
         self.ventana.after(random.randint(250, 450), callback)            
             
-    def training(self):           
-        #Correr el código de python de la graficación 
-        self.proceso_adqui = subprocess.Popen(["python", self.ruta_grafica])
+    def training(self):
         monitor_thread = threading.Thread(target=self.monitor_child, daemon=True)
         monitor_thread.start()
               
@@ -180,7 +178,7 @@ class BrainInterface():
         self.imagen.config(text="Inicio del registro", font = ("bookman",20), fg="white", bg="black")
         self.imagen.update()         
         self.ventana.after(1000, lambda:self.clear())        
-        lista = [1,1]
+        lista = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4]
         random.shuffle(lista)
         print("Reading test data...")        
         self.ventana.after(1000, lambda:self.new_movement(lista, 0, 1))       
@@ -221,7 +219,9 @@ class BrainInterface():
 if __name__ == "__main__":     
     ventana = tkinter.Tk()     
     BI = BrainInterface(ventana)  
-    ad = adquisicion()      
+    ad = adquisicion()   
+    #Correr el código de python de la graficación 
+    BI.proceso_adqui = subprocess.Popen(["python", BI.ruta_grafica])        
     BI.button.wait_variable(BI.var)
     p1 = multiprocessing.Process(target=BI.training(), args=(None,))    
     p2 = multiprocessing.Process(target=ad.get_marcador(), args=(None,))

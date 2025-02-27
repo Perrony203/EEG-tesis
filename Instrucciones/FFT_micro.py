@@ -267,15 +267,25 @@ def update(frame):
     for i in range(5):
         time_lines[i].set_data(x_time, y_time[i])        
         
-        # Ajuste dinámico del eje Y        
-        axes[i][0].autoscale()
-        axes[i][0].relim()
+        # # Ajuste dinámico del eje Y        
+        # axes[i][0].autoscale()
+        # axes[i][0].relim()
+        
+        axes[i][0].set_xlim(0, N_TIME_SAMPLES)          # Límite fijo en X
+        axes[i][0].set_ylim(-0.5, 0.5)                      # Límite fijo en Y (ajustar según tus datos)
+        axes[i][0].set_xticks(np.linspace(0, N_TIME_SAMPLES, 6))  # 6 ticks en X
+        axes[i][0].set_yticks(np.linspace(-0.5, 0.5, 5))  
     
     # Actualizar FFT solo si hay cambios
     for i in range(5):
         fft_lines[i].set_ydata(current_fft[i])
-        axes[i][1].autoscale()
-        axes[i][1].relim()
+        # axes[i][1].autoscale()
+        # axes[i][1].relim()
+        
+        axes[i][1].set_xlim(0, SAMPLE_RATE//2)          # Límite fijo en X (eje de frecuencias)
+        axes[i][1].set_ylim(0, 15)                       # Límite fijo en Y (ajustar según tus datos FFT)
+        axes[i][1].set_xticks(np.linspace(0, SAMPLE_RATE//2, 6))
+        axes[i][1].set_yticks(np.linspace(0, 15, 4))
     
     return time_lines + fft_lines
 
