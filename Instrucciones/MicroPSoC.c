@@ -8,16 +8,19 @@
 /*******************************************************************************
 * Header Files
 *******************************************************************************/
+#pragma once
+#include "cy_retarget_io.h"
+#include "arm_math.h"
+#include "cy_pdl.h"
 #include "cyhal.h"
 #include "cybsp.h"
-#include "cy_pdl.h"
-#include "cy_retarget_io.h"
 #include <string.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include "arm_math.h"
+#include <stdarg.h>
+#include <stdint.h>
+#include <stdio.h>
 
 /******************************************************************************
 * Macros                                                                     */
@@ -26,10 +29,16 @@
 #define SPI_FREQ_HZ                (3623000UL)
 /* SPI transfer bits per frame */
 #define BITS_PER_FRAME             (8)
+
 /* Convertion from 3 bytes info to uint32_t */
 #define CONVERT(C) 	(((uint32_t)info.data.ch[C].Channel[0]) << 16) + (((uint32_t)info.data.ch[C].Channel[1]) << 8) + ((uint32_t)info.data.ch[C].Channel[2])
 
+/* Number of channels to read */
 #define NCHANNELS 5
+
+/* Number of characteristics to the model */
+#define NCHARACS 4
+
 /* 8.1us delay */
 #define COMMON_DELAY               (75) // 10 ~= 0.5 us
 /* 11.5us delay */
@@ -122,8 +131,19 @@ int fft_index[NCHANNELS];
 float fft_value[NCHANNELS][FFT_BUFFER_SIZE/2];
 bool  fft_ready[NCHANNELS] = {false};
 
+/* Signal characteristics for SVM model */
+//double mu_power[NCHANNELS];
+//double beta_power[NCHANNELS];
+//double avg_freq[NCHANNELS];
+//double rms_value[NCHANNELS];
+double characs[NCHANNELS][NCHARACS];
+double sum_val[NCHANNELS] = {0.0};
+double total_power[NCHANNELS];
+double weighted_sum[NCHANNELS];
+double power;
+
 /* Frequency bins */
-uint16_t bins[FFT_BUFFER_SIZE/2];
+double bins[FFT_BUFFER_SIZE/2];
 
 /* Initialize FFT instance */
 arm_rfft_fast_instance_f32 fft_instance[NCHANNELS];
@@ -371,15 +391,41 @@ void ProcessValues(double* valoresReales, size_t chs2Read, int32_t* CHS) {
         			 + (  6.2095244481 * yv_HP[i][6]);
         valoresReales[i] = yv_HP[i][7];
 
-        //FFT generation
+        //Signal storage
         input_fft[i][fft_index[i]] = valoresReales[i];
+        sum_val[i] += valoresReales[i]*valoresReales[i];
         fft_index[i]++;
 
+        //FFT generation and characteristics calculation
         if(fft_index[i] >= FFT_BUFFER_SIZE){
         	arm_rfft_fast_f32(&fft_instance[i], &input_fft[i], &output_fft[i], 0);
         	for(int j = 0; j < FFT_BUFFER_SIZE; j += 2){
         		fft_value[i][j] = sqrtf((output_fft[i][j]*output_fft[i][j])+(output_fft[i][j+1]*output_fft[i][j+1]));
         	}
+
+        	// SVM model characteristics calculation
+        	/* Mu power */
+        	for (int j = 8; j <= 12; j++) {
+        		characs[i][0] += fft_value[i][j]*fft_value[i][j];
+			}
+
+        	/* Beta power */
+			for (int j = 13; j <= 32; j++) {
+				characs[i][1] += fft_value[i][j]*fft_value[i][j];
+			}
+
+			/* Average frequency */
+			for (int j = 0; j < FFT_BUFFER_SIZE/2; j++) {
+				power = fft_value[i][j]*fft_value[i][j];
+				weighted_sum[i] += bins[j]*power;
+				total_power[i] += power;
+			}
+			characs[i][2] = (total_power[i] != 0.0) ? (weighted_sum[i] / total_power[i]) : 0.0;
+
+			/* RMS value */
+		    characs[i][3] = sqrt(sum_val[i]/FFT_BUFFER_SIZE);
+
+		    /* Reinitialize values */
         	fft_index[i] = 0;
         	fft_ready[i] = true;
         }
@@ -562,7 +608,7 @@ int main(void){
 
 			/* frequency bins */
 			for(int i = 0; i < FFT_BUFFER_SIZE/2; i++){
-				bins[i] = (uint16_t)(i*SAMPLE_RATE/((float)FFT_BUFFER_SIZE));
+				bins[i] = (double)(i*SAMPLE_RATE/((float)FFT_BUFFER_SIZE));
 			}
 /*******************************************************************************
 * VOID LOOP
@@ -585,7 +631,7 @@ int main(void){
 					/* Format and store data in a real number form */
 					ProcessValues(valoresReales, chs2Read, CHS);
 
-					/* Sgnal for a communication start*/
+					/* Signal for a communication start*/
 					printf("I\n");
 					fflush(stdout);
 
@@ -597,8 +643,16 @@ int main(void){
 
 					/* Verify if every FFT is ready */
 					if(allFFTReady(fft_ready, NCHANNELS)){
-						//printf("%d\r\n",count);
+						printf("C\n");
+						/*Sending SVM characteristics*/
+						for (int i = 0; i < NCHANNELS; i++){
+							for (int j = 0; j < NCHARACS; j++){
+								printf("%.6f\n",characs[i][j]);
+								fflush(stdout);
+							}
+						}
 						/*Sending FFT data*/
+						printf("F\n");
 						for (int i = 0; i < NCHANNELS; i++){
 							fft_ready[i] = false;
 							for(int j = 0; j < FFT_BUFFER_SIZE/2; j++){

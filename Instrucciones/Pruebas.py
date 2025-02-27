@@ -4,6 +4,7 @@ import tkinter.messagebox
 from tkinter.ttk import * 
 import multiprocessing
 import subprocess
+import threading
 import tkinter  
 import random
 import time
@@ -57,14 +58,73 @@ class BrainInterface():
         self.button.place(relx=.5, rely=.5, anchor="center")          
 
         self.tiempo = 0
-        self.formatted_time = 0;
+        self.formatted_time = 0
         
         self.datos = [];        
         
-        self.ruta_grafica = "D:\\Universidad\\Trabajo de grado\\Desarrollo prototipo\\Código\\EEG-tesis\\Instrucciones\\FFT_micro.py"
-        self.proceso_adqui = 0;
+        self.proceso_adqui = 0
+        
+        self.ruta_grafica = r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\FFT_micro.py"                
+        self.ruta_datos = r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\Datos EEG"
+        self.ruta_estimulos = r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\Aparición imagenes"
+        self.ruta_SVM = r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\SVM characteristics"
+            
+    def monitor_child(self):
+        exitcode = self.proceso_adqui.wait()
+        if exitcode == 0:
+            self.ventana.destroy()
     
-    def generar_nombre_autoincremental(self, directorio=r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\Aparición imagenes", base_nombre="Instrucciones"):        
+    
+    def merge_csv_files(self, file1, file2, output_file, time_format='%Y-%m-%d %H:%M:%S.%f'):        
+        
+        stimuli = []
+        with open(file1, newline='', encoding='utf-8') as f1:
+            reader1 = csv.reader(f1, delimiter=';')
+            header1 = next(reader1, None) 
+            for row in reader1:
+                if len(row) < 2:
+                    continue
+                time_str = row[0].strip()
+                stim_type = row[1].strip()
+                try:
+                    stim_time = datetime.strptime(time_str, time_format)
+                    stimuli.append((stim_time, stim_type))
+                except Exception as e:
+                    print(f"Error al parsear tiempo del estímulo: '{time_str}'. Error: {e}")
+
+        stimuli.sort(key=lambda x: x[0])
+        
+        with open(file2, newline='', encoding='utf-8') as f2, \
+            open(output_file, mode='w', newline='', encoding='utf-8') as fout:
+            reader2 = csv.reader(f2, delimiter=';')
+            header2 = next(reader2, None)
+            writer = csv.writer(fout, delimiter=';')
+            
+            output_header = ["Estimulo", "C1", "C2", "C3", "C4", "C5"]
+            writer.writerow(output_header)
+            
+            for row in reader2:
+                if len(row) < 7:
+                    continue
+                start_str = row[0].strip()
+                end_str = row[1].strip()
+                try:
+                    start_time = datetime.strptime(start_str, time_format)
+                    end_time = datetime.strptime(end_str, time_format)
+                except Exception as e:
+                    print(f"Error al parsear tiempos en archivo2: '{start_str}' o '{end_str}'. Error: {e}")
+                    continue
+                
+                found_stimulus = "0"
+                for stim_time, stim_type in stimuli:
+                    if start_time <= stim_time <= end_time:
+                        found_stimulus = stim_type
+                        break
+                
+                channel_features = row[2:7]
+                writer.writerow([found_stimulus] + channel_features)
+            
+    def generar_nombre_autoincremental(self, directorio, base_nombre, creacion):        
         if not os.path.exists(directorio):
             print("No directory")
             os.makedirs(directorio)
@@ -72,22 +132,26 @@ class BrainInterface():
         archivos = [os.path.splitext(f)[0] for f in os.listdir(directorio) if f.startswith(base_nombre) and os.path.splitext(f)[0][len(base_nombre):].lstrip("_").isdigit()]         
         if archivos:
             numeros_existentes = [int(f[len(base_nombre):].lstrip("_")) for f in archivos]
-            nuevo_numero = max(numeros_existentes) + 1
+            if creacion:
+                nuevo_numero = max(numeros_existentes) + 1
+            else:
+                nuevo_numero = max(numeros_existentes)
         else:
             nuevo_numero = 1
 
         return os.path.join(directorio, f"{base_nombre}_{nuevo_numero}.csv")
                 
     def finish_program(self):
-        #self.proceso_adqui.terminate()
+        self.proceso_adqui.terminate()
         tkinter.messagebox.showinfo("Finalización","Recolección finalizada, muchas gracias por su colaboración")        
         #Guarda el archivo con las instrucciones y los tiempos de aparición 
-        with open(self.generar_nombre_autoincremental(), mode='w', newline='') as file:
-            print("File saved, register done succesfully!")
+        with open(self.generar_nombre_autoincremental(self.ruta_estimulos, "Instrucs", True), mode='w', newline='') as file:            
             writer = csv.writer(file, delimiter=';')            
             writer.writerow(['Time', 'Instruction'])
-            writer.writerows(self.datos)                            
-          
+            writer.writerows(self.datos) 
+            
+        self.merge_csv_files(self.generar_nombre_autoincremental(self.ruta_estimulos, "Instrucs", False), self.generar_nombre_autoincremental(self.ruta_datos, "Caracs", False), self.generar_nombre_autoincremental(self.ruta_SVM, "SVM", True))
+        print("Files created and storaged, register done succesfully!")  
         self.ventana.destroy()
 
     def clear(self):        
@@ -101,7 +165,10 @@ class BrainInterface():
             
     def training(self):           
         #Correr el código de python de la graficación 
-        #self.proceso_adqui = subprocess.run(["python", self.ruta_grafica])      
+        self.proceso_adqui = subprocess.Popen(["python", self.ruta_grafica])
+        monitor_thread = threading.Thread(target=self.monitor_child, daemon=True)
+        monitor_thread.start()
+              
         print("Reading training data...")       
         #Iniciar el proceso de envío de instrucciones            
         self.button.place_forget()                     
