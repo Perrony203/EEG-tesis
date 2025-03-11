@@ -82,9 +82,9 @@ def generar_nombre_autoincremental(directorio=r"D:\Universidad\Trabajo de grado\
 path = generar_nombre_autoincremental()
 
 # Escribir encabezado en los archivos
-with open(path, mode='w', newline='') as file:
-    writer = csv.writer(file, delimiter=';')            
-    writer.writerow(['Start_time', 'End_time', 'C1', 'C2', 'C3', 'C4', 'C5'])
+# with open(path, mode='w', newline='') as file:
+#     writer = csv.writer(file, delimiter=';')            
+#     writer.writerow(['Start_time', 'End_time', 'C1', 'C2', 'C3', 'C4', 'C5'])
 
 def procesar_arreglo(arr, total_elementos):    
     
@@ -195,9 +195,9 @@ def receive_data():
                         
                         caracs_str = [separador.join(map(str, fila)) for fila in caracs_data]
                         
-                        with open(path, mode='a', newline='') as file:
-                            writer = csv.writer(file, delimiter=';')
-                            writer.writerow([str(ini_time), str(end_time)] + caracs_str)
+                        # with open(path, mode='a', newline='') as file:
+                        #     writer = csv.writer(file, delimiter=';')
+                        #     writer.writerow([str(ini_time), str(end_time)] + caracs_str)
                         
                         with data_lock:
                             for i in range(5):

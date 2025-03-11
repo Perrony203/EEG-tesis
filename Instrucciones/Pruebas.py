@@ -208,8 +208,8 @@ class BrainInterface():
                 self.formatted_time = self.tiempo.strftime("%Y-%m-%d %H:%M:%S.%f")
                 self.datos.append((str(self.formatted_time),str(lista[i])))
                 
-            self.ventana.after(200, self.clear)
-            self.ventana.after(1800, lambda: self.cross(lambda:self.new_movement(lista, i+1, fin))) 
+            self.ventana.after(400, self.clear)
+            self.ventana.after(2000, lambda: self.cross(lambda:self.new_movement(lista, i+1, fin))) 
         else:
             if fin == 0:
                 self.ventana.after(3000, lambda:self.register())
