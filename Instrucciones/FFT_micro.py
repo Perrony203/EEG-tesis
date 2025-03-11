@@ -1,15 +1,17 @@
-import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import socket
-import subprocess
-import signal
-import sys
-import threading
-import time
-import numpy as np
-import serial
-import random
+import matplotlib.pyplot as plt
 from collections import deque
+from datetime import datetime
+import numpy as np
+import threading
+import random
+import serial
+import signal
+import time
+import csv
+import sys
+import re
+import os
 
 # =====================================================================
 # PARÁMETROS DE CONFIGURACIÓN
@@ -60,72 +62,149 @@ fft_matrix = np.zeros((5, 128))
 prev_fft = np.zeros((5, 128))  # Para detectar cambios
 fft_bins = np.linspace(0, SAMPLE_RATE//2, 128)  # Eje de frecuencias
 valoresString = []
+start = True
+separador = ","
 
-def pad_array_random(arr, expected_length):
-    first = arr[:5]
-    last = arr[-1]    
+def generar_nombre_autoincremental(directorio=r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\Datos EEG", base_nombre="Caracs"):        
+    if not os.path.exists(directorio):
+        print("No directory")
+        os.makedirs(directorio)
+        
+    archivos = [os.path.splitext(f)[0] for f in os.listdir(directorio) if f.startswith(base_nombre) and os.path.splitext(f)[0][len(base_nombre):].lstrip("_").isdigit()]         
+    if archivos:
+        numeros_existentes = [int(f[len(base_nombre):].lstrip("_")) for f in archivos]
+        nuevo_numero = max(numeros_existentes) + 1
+    else:
+        nuevo_numero = 1
+
+    return os.path.join(directorio, f"{base_nombre}_{nuevo_numero}.csv")
+
+path = generar_nombre_autoincremental()
+
+# Escribir encabezado en los archivos
+with open(path, mode='w', newline='') as file:
+    writer = csv.writer(file, delimiter=';')            
+    writer.writerow(['Start_time', 'End_time', 'C1', 'C2', 'C3', 'C4', 'C5'])
+
+def procesar_arreglo(arr, total_elementos):    
     
-    original_middle = arr[5:-1]    
-    desired_middle_length = expected_length - 6    
+    if total_elementos < 5:
+        raise ValueError("El número total de elementos debe ser al menos 5.")    
     
-    if len(original_middle) > desired_middle_length:
-        original_middle = original_middle[:desired_middle_length]
+    primeros_5 = arr[:5] 
+    patron = re.compile(r'^\d+\.\d{6}$')
+    validos = [x for x in arr[5:] if patron.match(x)] 
+    base = primeros_5 + validos
     
-    n_original = len(original_middle)    
-    new_middle = ["0.0"] * desired_middle_length    
-    positions = sorted(random.sample(range(desired_middle_length), n_original))
+    if len(base) > total_elementos:
+        base = primeros_5 + validos[:total_elementos - 5]
     
-    for i, pos in enumerate(positions):
-        new_middle[pos] = original_middle[i]
+    if len(base) == total_elementos:
+        return base
+
+    faltantes = total_elementos - len(base)
     
-    return first + new_middle + [last]
+    while faltantes > 0:
+        longitud = len(base)
+        indices_validos = list(range(5, longitud - 1)) 
+        
+        if not indices_validos:
+            if longitud >= 4:
+                vecinos = base[-4:]
+                promedio = sum(float(v) for v in vecinos) / 4.0
+                nuevo_valor = f"{promedio:.6f}"
+                base.append(nuevo_valor)
+                faltantes -= 1
+            else:
+                raise ValueError("No se pueden obtener 4 vecinos para calcular el promedio.")
+            continue
+        
+        pos = random.choice(indices_validos)
+        
+        try:
+            vec_izq1 = float(base[pos - 2])
+            vec_izq2 = float(base[pos - 1])
+            vec_der1 = float(base[pos])
+            vec_der2 = float(base[pos + 1])
+            
+        except (IndexError, ValueError):
+            if longitud >= 4:
+                vecinos = base[-4:]
+                promedio = sum(float(v) for v in vecinos) / 4.0
+                nuevo_valor = f"{promedio:.6f}"
+                base.append(nuevo_valor)
+                faltantes -= 1
+                continue
+            else:
+                raise ValueError("Error al obtener vecinos para el promedio.")
+        
+        promedio = (vec_izq1 + vec_izq2 + vec_der1 + vec_der2) / 4.0
+        nuevo_valor = f"{promedio:.6f}"
+        base.insert(pos, nuevo_valor)
+        faltantes -= 1
+        
+    return base
 
 def receive_data():
-    global data_channels, fft_matrix, prev_fft, full_operation, valoresString
+    global data_channels, fft_matrix, prev_fft, full_operation, valoresString, start, separador
     while not closing:
         try:
             valoresString.clear() 
-            line = ser.readline().decode('utf-8').strip()
-            valoresString.append(line)
+            line = ser.readline().decode('iso-8859-1').strip()
             if line == "I":
+                if start:
+                    ini_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+                    start = False
+                    
+                counter = 0    
                 while line != "NEW" and line != "OLD":
-                    line = ser.readline().decode('utf-8').strip()
-                    valoresString.append(line)                                   
+                    line = ser.readline().decode('iso-8859-1').strip()
+                    valoresString.append(line)
+                    counter += 1
+                    if counter >= 10:
+                        end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")                   
                 
-                if valoresString[0] == "I":
-                    valoresString = valoresString[1:]
-                    if len(valoresString) == 6 and valoresString[-1] == "OLD":
-                        valoresString = valoresString[:-1]
+                if len(valoresString) == 6 and valoresString[-1] == "OLD":
+                    valoresString = valoresString[:-1]
+                    
+                    try:                            
+                        valores = [float(v.replace(',', '.')) for v in valoresString] 
+                        time_data = valores                                 
                         
-                        try:                            
-                            valores = [float(v.replace(',', '.')) for v in valoresString] 
-                            time_data = valores                                 
-                            
-                            with data_lock:
-                                for i in range(5):
-                                    data_channels[i].append(time_data[i])                   
+                        with data_lock:
+                            for i in range(5):
+                                data_channels[i].append(time_data[i])                   
 
-                        except (ValueError, IndexError):
-                            continue
+                    except (ValueError, IndexError):
+                        continue
+                    
+                elif valoresString[-1] == "NEW" and valoresString[5] == "C" and valoresString[26] == "F": 
+                    start = True
+                    tiempo = valoresString[0:5]
+                    caracteristicas = valoresString[6:26]
+                    valoresString = valoresString[27:-1]                       
+                    
+                    if len(valoresString) != 640:
+                        print("BOBINO ", len(valoresString))
+                        valoresString = procesar_arreglo(valoresString, 640)
+                    
+                    try:
+                        time_data = [float(v.replace(',', '.')) for v in tiempo]
+                        fft_matrix = np.array([float(v.replace(',', '.')) for v in valoresString]).reshape(5, 128)   
+                        caracs_data = np.array([float(v.replace(',', '.')) for v in caracteristicas]).reshape(5, 4)
                         
-                    elif valoresString[-1] == "NEW":       
-                        valoresString = valoresString[:-1]
+                        caracs_str = [separador.join(map(str, fila)) for fila in caracs_data]
                         
-                        if len(valoresString) != 645:
-                            valoresString = pad_array_random(valoresString, 645)
+                        with open(path, mode='a', newline='') as file:
+                            writer = csv.writer(file, delimiter=';')
+                            writer.writerow([str(ini_time), str(end_time)] + caracs_str)
                         
-                        try:
-                            valores = [float(v.replace(',', '.')) for v in valoresString]
-                            
-                            time_data = valores[:5]
-                            fft_matrix = np.array(valores[5:645]).reshape(5, 128)    
-                            
-                            with data_lock:
-                                for i in range(5):
-                                    data_channels[i].append(time_data[i])  
-                                    
-                        except (ValueError, IndexError):
-                            continue 
+                        with data_lock:
+                            for i in range(5):
+                                data_channels[i].append(time_data[i])  
+                                
+                    except (ValueError, IndexError):
+                        continue 
                         
                 if(not full_operation):
                     full_operation = True
@@ -135,10 +214,10 @@ def receive_data():
             print("Serial port error")
             handle_exit(None,None,True)
             break   
-        except Exception as e:
-            if not closing:
-                print(f"Error: {e}")
-            break
+        # except Exception as e:
+        #     if not closing:
+        #         print(f"Error: {e}")
+        #     break
     
 # Iniciar hilo de recepción
 data_thread = threading.Thread(target=receive_data, daemon=True)
@@ -188,15 +267,25 @@ def update(frame):
     for i in range(5):
         time_lines[i].set_data(x_time, y_time[i])        
         
-        # Ajuste dinámico del eje Y        
-        axes[i][0].autoscale()
-        axes[i][0].relim()
+        # # Ajuste dinámico del eje Y        
+        # axes[i][0].autoscale()
+        # axes[i][0].relim()
+        
+        axes[i][0].set_xlim(0, N_TIME_SAMPLES)          # Límite fijo en X
+        axes[i][0].set_ylim(-0.5, 0.5)                      # Límite fijo en Y (ajustar según tus datos)
+        axes[i][0].set_xticks(np.linspace(0, N_TIME_SAMPLES, 6))  # 6 ticks en X
+        axes[i][0].set_yticks(np.linspace(-0.5, 0.5, 5))  
     
     # Actualizar FFT solo si hay cambios
     for i in range(5):
         fft_lines[i].set_ydata(current_fft[i])
-        axes[i][1].autoscale()
-        axes[i][1].relim()
+        # axes[i][1].autoscale()
+        # axes[i][1].relim()
+        
+        axes[i][1].set_xlim(0, SAMPLE_RATE//2)          # Límite fijo en X (eje de frecuencias)
+        axes[i][1].set_ylim(0, 15)                       # Límite fijo en Y (ajustar según tus datos FFT)
+        axes[i][1].set_xticks(np.linspace(0, SAMPLE_RATE//2, 6))
+        axes[i][1].set_yticks(np.linspace(0, 15, 4))
     
     return time_lines + fft_lines
 
@@ -213,4 +302,3 @@ ani = animation.FuncAnimation(
 
 fig.canvas.mpl_connect('close_event', handle_exit)
 plt.show()
-
