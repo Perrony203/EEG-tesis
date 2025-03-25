@@ -68,13 +68,7 @@ class BrainInterface():
         self.ruta_datos = r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\Datos EEG"
         self.ruta_estimulos = r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\Aparición imagenes"
         self.ruta_SVM = r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\SVM characteristics"
-               
-    def monitor_child(self):
-        exitcode = self.proceso_adqui.wait()
-        if exitcode == 0:
-            self.ventana.destroy()
-    
-    
+            
     def merge_csv_files(self, file1, file2, output_file, time_format='%Y-%m-%d %H:%M:%S.%f'):        
         
         stimuli = []
