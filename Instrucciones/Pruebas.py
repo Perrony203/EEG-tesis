@@ -158,9 +158,6 @@ class BrainInterface():
         self.ventana.after(random.randint(250, 450), callback)            
             
     def training(self):
-        monitor_thread = threading.Thread(target=self.monitor_child, daemon=True)
-        monitor_thread.start()
-              
         print("Reading training data...")       
         #Iniciar el proceso de envío de instrucciones            
         self.button.place_forget()                     
