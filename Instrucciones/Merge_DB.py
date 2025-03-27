@@ -36,20 +36,20 @@ def combinar_csv(archivos, archivo_salida):
         return
 
     with open(archivo_salida, 'w', newline='', encoding='utf-8') as f_out:
-        writer = csv.writer(f_out)
+        writer = csv.writer(f_out, delimiter=';')  # Mantener el delimitador correcto
         
         for i, archivo in enumerate(archivos):
             with open(archivo, 'r', newline='', encoding='utf-8') as f_in:
-                reader = csv.reader(f_in, delimiter=';')  # Ajusta el delimitador si es necesario
+                reader = csv.reader(f_in, delimiter=';')  
                 
                 if i == 0:
-                    # Es el primer archivo, escribir su cabecera
+                    # Escribir la cabecera del primer archivo
                     writer.writerow(next(reader, None))  
                 else:
-                    # Omitir la cabecera de los archivos siguientes
+                    # Omitir la cabecera en los siguientes archivos
                     next(reader, None)
                 
-                # Escribir el contenido sin cabecera
+                # Escribir las filas sin modificar el formato de las columnas
                 for row in reader:
                     writer.writerow(row)
 
