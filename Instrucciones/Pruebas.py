@@ -26,7 +26,7 @@ class adquisicion():
         
 class BrainInterface():
         
-    def __init__(self, ventana):  
+    def __init__(self, ventana, sujeto):  
         self.marcadores = []  
         self.ventana = ventana
         self.ventana.title("Interfaz de adquisición cerebral")
@@ -64,13 +64,15 @@ class BrainInterface():
         
         self.proceso_adqui = 0
         
+        sujeto = sujeto.lower().capitalize()
         self.ruta_grafica = r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\FFT_micro.py"                
-        self.ruta_datos = r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\Datos EEG"
-        self.ruta_estimulos = r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\Aparición imagenes"
-        self.ruta_SVM = r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\SVM characteristics"
+        self.ruta_datos = os.path.join(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\Datos EEG", sujeto)
+        self.ruta_estimulos = os.path.join(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\Aparición imagenes", sujeto)
+        self.ruta_SVM = os.path.join(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\SVM characteristics", sujeto)
             
-    def merge_csv_files(self, file1, file2, output_file, time_format='%Y-%m-%d %H:%M:%S.%f'):        
-        
+
+    def merge_csv_files(self, file1, file2, output_file, time_format='%Y-%m-%d %H:%M:%S.%f'):
+
         stimuli = []
         with open(file1, newline='', encoding='utf-8') as f1:
             reader1 = csv.reader(f1, delimiter=';')
@@ -86,10 +88,13 @@ class BrainInterface():
                 except Exception as e:
                     print(f"Error al parsear tiempo del estímulo: '{time_str}'. Error: {e}")
 
-        stimuli.sort(key=lambda x: x[0])
-        
+        stimuli.sort(key=lambda x: x[0])  # Ordenar por tiempo
+
+        first_occurrences = {'1': False, '2': False, '3': False, '4': False}  # Para rastrear las primeras ocurrencias
+
         with open(file2, newline='', encoding='utf-8') as f2, \
             open(output_file, mode='w', newline='', encoding='utf-8') as fout:
+            
             reader2 = csv.reader(f2, delimiter=';')
             header2 = next(reader2, None)
             writer = csv.writer(fout, delimiter=';')
@@ -115,6 +120,11 @@ class BrainInterface():
                         found_stimulus = stim_type
                         break
                 
+                # Omitir la primera aparición de los estímulos 1, 2, 3 y 4
+                if found_stimulus in first_occurrences and not first_occurrences[found_stimulus]:
+                    first_occurrences[found_stimulus] = True
+                    continue  # Saltar esta fila
+
                 channel_features = row[2:7]
                 writer.writerow([found_stimulus] + channel_features)
             
@@ -139,12 +149,17 @@ class BrainInterface():
         self.proceso_adqui.terminate()
         tkinter.messagebox.showinfo("Finalización","Recolección finalizada, muchas gracias por su colaboración")        
         #Guarda el archivo con las instrucciones y los tiempos de aparición 
-        with open(self.generar_nombre_autoincremental(self.ruta_estimulos, "Instrucs", True), mode='w', newline='') as file:            
+        
+        ruta_instrucs = self.generar_nombre_autoincremental(self.ruta_estimulos, "Instrucs", True)
+        ruta_caracs = self.generar_nombre_autoincremental(self.ruta_datos, "Caracs", False)
+        ruta_svm = self.generar_nombre_autoincremental(self.ruta_SVM, "SVM", True)
+        
+        with open(ruta_instrucs, mode='w', newline='') as file:            
             writer = csv.writer(file, delimiter=';')            
             writer.writerow(['Time', 'Instruction'])
             writer.writerows(self.datos) 
             
-        self.merge_csv_files(self.generar_nombre_autoincremental(self.ruta_estimulos, "Instrucs", False), self.generar_nombre_autoincremental(self.ruta_datos, "Caracs", False), self.generar_nombre_autoincremental(self.ruta_SVM, "SVM", True))
+        self.merge_csv_files(ruta_instrucs, ruta_caracs, ruta_svm)
         print("Files created and storaged, register done succesfully!")  
         self.ventana.destroy()
 
@@ -208,11 +223,12 @@ class BrainInterface():
                 self.ventana.after(1000, lambda:self.finish_program())
                 
 if __name__ == "__main__":     
-    ventana = tkinter.Tk()     
-    BI = BrainInterface(ventana)  
+    ventana = tkinter.Tk()  
+    sujeto = input("Ingrese sujeto de prueba: ")   
+    BI = BrainInterface(ventana, sujeto)  
     ad = adquisicion()   
     #Correr el código de python de la graficación 
-    BI.proceso_adqui = subprocess.Popen(["python", BI.ruta_grafica])        
+    BI.proceso_adqui = subprocess.Popen(["python", BI.ruta_grafica, sujeto])        
     BI.button.wait_variable(BI.var)
     p1 = multiprocessing.Process(target=BI.training(), args=(None,))    
     p2 = multiprocessing.Process(target=ad.get_marcador(), args=(None,))

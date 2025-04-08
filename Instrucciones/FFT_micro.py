@@ -50,6 +50,9 @@ try:
 except:
     print("No Serial port available...")
     handle_exit()
+    
+sujeto = sys.argv[1]
+sujeto = sujeto.lower().capitalize()
 
 # =====================================================================
 # ESTRUCTURAS DE DATOS
@@ -65,7 +68,7 @@ valoresString = []
 start = True
 separador = ","
 
-def generar_nombre_autoincremental(directorio=r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\Datos EEG", base_nombre="Caracs"):        
+def generar_nombre_autoincremental(directorio=os.path.join(r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\Datos EEG", sujeto), base_nombre="Caracs"):        
     if not os.path.exists(directorio):
         print("No directory")
         os.makedirs(directorio)
@@ -271,7 +274,7 @@ def update(frame):
         #axes[i][0].relim()
         max_val = 0.25
         axes[i][0].set_xlim(0, N_TIME_SAMPLES)          # Límite fijo en X
-        axes[i][0].set_ylim(-max_val, max_val)                      # Límite fijo en Y (ajustar según tus datos)
+        axes[i][0].set_ylim(-max_val, max_val)          # Límite fijo en Y (ajustar según tus datos)
         axes[i][0].set_xticks(np.linspace(0, N_TIME_SAMPLES, 6))  # 6 ticks en X
         #axes[i][0].set_yticks(np.linspace(-0.5, 0.5, 5))  
     
