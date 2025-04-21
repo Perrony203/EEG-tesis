@@ -162,7 +162,7 @@ y_test
 #########################################
 # Creación y entrenamiento del modelo SVM
 #########################################
-model = SVC(C = 20.0, gamma= 0.5999999999999998, kernel='linear')
+model = SVC(C = 20.0, gamma= 0.5999999999999998, kernel='poly')
 
 """## 6. Train the model"""
 
@@ -300,7 +300,7 @@ input("Para continuar con las gráficas ingrese cualquier tecla")
 params = {
     "C": np.arange(2, 100, 2), #0.01 A 1000 TIPICAMENTE VALORES LOGARITMICOS
     "gamma": np.arange(0.1, 1, 0.01),
-    "kernel": ['linear']
+    "kernel": ['linear', 'poly', 'rbf']
 }
 
 # """### 3. Define Performance Measure"""
