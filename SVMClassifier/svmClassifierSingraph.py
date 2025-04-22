@@ -39,7 +39,7 @@ def leer_csv_a_arreglo(ruta_archivo):
                     # Las columnas restantes se dividen por coma
                     valores = [valor.strip() for valor in columna.split(',')]
                     fila_completa.extend(valores)
-            if len(fila_completa) == 41:
+            if len(fila_completa) == 17: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
                 datos.append(fila_completa)
             else:
                 continue
@@ -53,7 +53,7 @@ def lista_a_diccionario(lista):
     }
     return diccionario
 
-ruta_csv = r'D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\SVM_combined\Legs-arms\Sebastian\Legs-arms_SVM_1.csv'
+ruta_csv = r'D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\SVM_combined\Arms\Sebastian\Arms_SVM_1.csv'
 
 lista_filas = leer_csv_a_arreglo(ruta_csv)
 data_dict = lista_a_diccionario(lista_filas)
@@ -63,7 +63,7 @@ data_dict['target'] = [int(x) for x in data_dict['target']]
 data_dict['data'] = [[float(val) for val in fila] for fila in data_dict['data']]
 
 
-feature_columns = [f"f{i+1}" for i in range(40)]
+feature_columns = [f"f{i+1}" for i in range(16)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
@@ -73,7 +73,7 @@ df = df[df["target"] != 0].reset_index(drop=True)
 
 # print("DataFrame head:")
 #print(df.head())
-
+print("Cantidad de muestras luego del filtrado:", df.shape[0])
 scaler = StandardScaler()
 df[feature_columns] = scaler.fit_transform(df[feature_columns])
 # print(df.head())
@@ -90,16 +90,7 @@ y = LabelEncoder().fit_transform(y)
 # print('Input shape: ', X.shape)
 # print('Target variable shape: ', y.shape)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-#Definición de parámetros
-Const = 20.0
-Gamma = 0.6
-Kernel = 'linear'
-
-
-#PROBANDO
-
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
 # Escalado + SVM
 pipeline = make_pipeline(StandardScaler(), SVC())
@@ -110,6 +101,7 @@ param_grid = {
     'svc__C': np.logspace(-10, 10, 100),
     'svc__gamma': np.logspace(-12, 4, 100)
 }
+
 print("Iniciando entrenamiento")
 grid_search = GridSearchCV(pipeline, param_grid, cv=10, scoring='accuracy', n_jobs=-1)
 grid_search.fit(X_train, y_train)
@@ -156,11 +148,6 @@ plt.plot(train_sizes, test_scores_mean, 'o-', color="g",
 plt.legend(loc="best")
 plt.tight_layout()
 
-
-
-#PROBANDO
-
-
 best_params = grid_search.best_params_
 model = SVC(C=best_params['svc__C'], gamma=best_params['svc__gamma'], kernel=best_params['svc__kernel'])
 
@@ -185,37 +172,5 @@ print("Matriz de confusión (prueba):")
 print(metrics.confusion_matrix(y_test, test_predict))
 
 print(f'Model accuracy: {round(metrics.accuracy_score(y_test, test_predict)*100,2)}%')
-
-# Optimización
-# params = {
-#     "C": np.arange(2, 100, 2),
-#     "gamma": np.arange(0.1, 1, 0.01),
-#     "kernel": ['linear']
-# }
-
-# auc = make_scorer(roc_auc_score)
-
-# best_model = RandomizedSearchCV(model, param_distributions=params, random_state=42,
-#                                 n_iter=2, cv=3, verbose=0, n_jobs=1,
-#                                 return_train_score=True, scoring = auc)
-
-# best_model.fit(X_train, y_train)
-
-# def report_best_scores(results, n_top=3):
-#     for i in range(1, n_top + 1):
-#         candidates = np.flatnonzero(results['rank_test_score'] == i)
-#         for candidate in candidates:
-#             print("Model with rank: {0}".format(i))
-#             print("Mean validation score: {0:.3f} (std: {1:.3f})".format(
-#                 results['mean_test_score'][candidate],
-#                 results['std_test_score'][candidate]))
-#             best_params = results['params'][candidate]
-#             print("Best parameters found:")
-#             for param, value in best_params.items():
-#                 print("  {0}: {1}".format(param, value))
-#             print("")
-
-# report_best_scores(best_model.cv_results_, 1)
-
 
 plt.show()

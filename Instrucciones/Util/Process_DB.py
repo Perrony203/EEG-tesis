@@ -46,12 +46,10 @@ def modificar_estimulos(df, columna="Estimulo", regla=1):
 
     elif regla == 2:
         df_modificado = df_modificado[df_modificado[columna].isin([0, 1, 2])]
-        df_modificado = df_modificado[[columna, "C2", "C3", "C4"]]
 
     elif regla == 3:
         df_modificado = df_modificado[df_modificado[columna].isin([0, 3, 4])]
         df_modificado[columna] = df_modificado[columna].replace({3: 2, 4: 1})
-        df_modificado = df_modificado[[columna, "C1", "C5"]]
 
     return df_modificado
 
