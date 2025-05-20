@@ -9,8 +9,11 @@ import os
 import csv
 import warnings
 
-from sklearn.svm import SVC
-from sklearn.calibration import LabelEncoder
+# from sklearn.svm import SVC
+from cuml.svm import SVC  # GPU-accelerated SVM
+# from sklearn.calibration import LabelEncoder
+from cuml.preprocessing import LabelEncoder
+
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import RandomizedSearchCV
@@ -53,7 +56,7 @@ def lista_a_diccionario(lista):
     }
     return diccionario
 
-ruta_csv = r'D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\SVM_combined\Complete_data\Sebastian\total_SVM_1.csv'
+ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Complete_data\All\total_SVM_1.csv'
 
 lista_filas = leer_csv_a_arreglo(ruta_csv)
 data_dict = lista_a_diccionario(lista_filas)
@@ -102,31 +105,69 @@ param_grid = {
 }
 
 print("Iniciando entrenamiento")
-grid_search = GridSearchCV(param_grid, cv=10, scoring='accuracy', n_jobs=-1)
-grid_search.fit(X_train, y_train)
+#grid_search = GridSearchCV(param_grid, cv=10, scoring='accuracy', n_jobs=-1)
+#grid_search.fit(X_train, y_train)
 
-print("Mejores parámetros:", grid_search.best_params_)
-print("Mejor score en validación cruzada:", grid_search.best_score_)
+from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import accuracy_score
+import itertools
 
-best_model = grid_search.best_estimator_
+skf = StratifiedKFold(n_splits=5)
+best_score = 0
+best_params = {}
 
-y_pred = best_model.predict(X_test)
-print(classification_report(y_test, y_pred))
+for kernel, C, gamma, dfs in itertools.product(
+        param_grid['kernel'],
+        param_grid['C'],
+        param_grid['gamma'],
+        param_grid['decision_function_shape']):
 
-train_sizes, train_scores, test_scores = learning_curve(
-    estimator=best_model,
-    X=X_train,
-    y=y_train,
-    train_sizes=np.linspace(0.1, 1.0, 30),
-    cv=10,
-    scoring='accuracy',
-    n_jobs=-1
-)
+    acc_scores = []
+    for train_idx, val_idx in skf.split(X_train, y_train):
+        model = SVC(C=C, gamma=gamma, kernel=kernel)
+        model.fit(X_train[train_idx], y_train[train_idx])
+        preds = model.predict(X_train[val_idx])
+        acc_scores.append(accuracy_score(y_train[val_idx], preds))
 
-train_scores_mean = np.mean(train_scores, axis=1)
-train_scores_std = np.std(train_scores, axis=1)
-test_scores_mean = np.mean(test_scores, axis=1)
-test_scores_std = np.std(test_scores, axis=1)
+    mean_acc = np.mean(acc_scores)
+    if mean_acc > best_score:
+        best_score = mean_acc
+        best_params = {'C': C, 'gamma': gamma, 'kernel': kernel, 'decision_function_shape': dfs}
+
+print("Best params:", best_params)
+print("Best cross-validation accuracy:", best_score)
+
+model = SVC(C=best_params['C'], gamma=best_params['gamma'], kernel=best_params['kernel'])
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+
+# Convert cuDF Series to NumPy if needed
+y_pred = y_pred.to_numpy() if hasattr(y_pred, "to_numpy") else y_pred
+
+
+#print("Mejores parámetros:", grid_search.best_params_)
+#print("Mejor score en validación cruzada:", grid_search.best_score_)
+
+#best_model = grid_search.best_estimator_
+
+#y_pred = best_model.predict(X_test)
+#print(classification_report(y_test, y_pred))
+
+#train_sizes, train_scores, test_scores = learning_curve(
+#    estimator=best_model,
+#    X=X_train,
+#    y=y_train,
+#    train_sizes=np.linspace(0.1, 1.0, 30),
+#    cv=10,
+#    scoring='accuracy',
+#    n_jobs=-1
+#)
+
+# train_scores_mean = np.mean(train_scores, axis=1)
+# train_scores_std = np.std(train_scores, axis=1)
+# test_scores_mean = np.mean(test_scores, axis=1)
+# test_scores_std = np.std(test_scores, axis=1)
 
 plt.figure(figsize=(10, 6))
 plt.title("Curva de Aprendizaje del SVM")
@@ -134,22 +175,22 @@ plt.xlabel("Tamaño del conjunto de entrenamiento")
 plt.ylabel("Precisión (accuracy)")
 plt.grid()
 
-plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
-                 train_scores_mean + train_scores_std, alpha=0.1,
-                 color="r")
-plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
-                 test_scores_mean + test_scores_std, alpha=0.1,
-                 color="g")
+# plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
+#                  train_scores_mean + train_scores_std, alpha=0.1,
+#                  color="r")
+# plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
+#                  test_scores_mean + test_scores_std, alpha=0.1,
+#                  color="g")
 
-plt.plot(train_sizes, train_scores_mean, 'o-', color="r",
-         label="Precisión en entrenamiento")
-plt.plot(train_sizes, test_scores_mean, 'o-', color="g",
-         label="Precisión en validación cruzada")
+# plt.plot(train_sizes, train_scores_mean, 'o-', color="r",
+#          label="Precisión en entrenamiento")
+# plt.plot(train_sizes, test_scores_mean, 'o-', color="g",
+#          label="Precisión en validación cruzada")
 
 plt.legend(loc="best")
 plt.tight_layout()
 
-best_params = grid_search.best_params_
+# best_params = grid_search.best_params_
 model = SVC(C=best_params['svc__C'], gamma=best_params['svc__gamma'], kernel=best_params['svc__kernel'], decision_function_shape=best_params['svc__decision_function_shape'])
 
 model.fit(X_train, y_train)
