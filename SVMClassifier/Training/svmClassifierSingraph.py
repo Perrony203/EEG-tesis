@@ -39,7 +39,7 @@ def leer_csv_a_arreglo(ruta_archivo):
                     # Las columnas restantes se dividen por coma
                     valores = [valor.strip() for valor in columna.split(',')]
                     fila_completa.extend(valores)
-            if len(fila_completa) == 17: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
+            if len(fila_completa) == 41: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
                 datos.append(fila_completa)
             else:
                 continue
@@ -53,7 +53,7 @@ def lista_a_diccionario(lista):
     }
     return diccionario
 
-ruta_csv = r'D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\SVM_combined\Arms\Sebastian\Arms_SVM_1.csv'
+ruta_csv = r'D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\SVM_combined\Complete_data\Sebastian\total_SVM_1.csv'
 
 lista_filas = leer_csv_a_arreglo(ruta_csv)
 data_dict = lista_a_diccionario(lista_filas)
@@ -63,13 +63,13 @@ data_dict['target'] = [int(x) for x in data_dict['target']]
 data_dict['data'] = [[float(val) for val in fila] for fila in data_dict['data']]
 
 
-feature_columns = [f"f{i+1}" for i in range(16)]
+feature_columns = [f"f{i+1}" for i in range(40)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-df = df[df["target"] != 0].reset_index(drop=True)
-##df = df[df["target"] != 3].reset_index(drop=True)
-##df = df[df["target"] != 2].reset_index(drop=True)
+#df = df[df["target"] != 0].reset_index(drop=True)
+#df = df[df["target"] != 3].reset_index(drop=True)
+#df = df[df["target"] != 2].reset_index(drop=True)
 
 # print("DataFrame head:")
 #print(df.head())
@@ -92,21 +92,22 @@ y = LabelEncoder().fit_transform(y)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-# Escalado + SVM
-pipeline = make_pipeline(StandardScaler(), SVC())
-
 # Búsqueda en hiperparámetros
 param_grid = {
     'svc__kernel': ['rbf'],
     'svc__C': np.logspace(-10, 10, 100),
-    'svc__gamma': np.logspace(-12, 4, 100)
+    'svc__gamma': np.logspace(-12, 4, 100),
+    'svc__decision_function_shape': ['ovr', 'ovo']
+    
 }
 
 print("Iniciando entrenamiento")
-grid_search = GridSearchCV(pipeline, param_grid, cv=10, scoring='accuracy', n_jobs=-1)
+grid_search = GridSearchCV(param_grid, cv=10, scoring='accuracy', n_jobs=-1)
 grid_search.fit(X_train, y_train)
 
 print("Mejores parámetros:", grid_search.best_params_)
+print("Mejor score en validación cruzada:", grid_search.best_score_)
+
 best_model = grid_search.best_estimator_
 
 y_pred = best_model.predict(X_test)
@@ -149,7 +150,7 @@ plt.legend(loc="best")
 plt.tight_layout()
 
 best_params = grid_search.best_params_
-model = SVC(C=best_params['svc__C'], gamma=best_params['svc__gamma'], kernel=best_params['svc__kernel'])
+model = SVC(C=best_params['svc__C'], gamma=best_params['svc__gamma'], kernel=best_params['svc__kernel'], decision_function_shape=best_params['svc__decision_function_shape'])
 
 model.fit(X_train, y_train)
 

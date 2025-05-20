@@ -31,6 +31,7 @@ full_operation = False
 # =====================================================================
 closing = False
 data_lock = threading.Lock()
+cont = 0
 
 # Señal para terminar correctamente
 def handle_exit(sig=None, frame=None, err=False):
@@ -263,11 +264,12 @@ def update(frame):
     with data_lock:
         x_time = np.arange(len(data_channels[0]))
         y_time = [np.array(ch) for ch in data_channels.values()]
-        current_fft = fft_matrix.copy()
+        current_fft = fft_matrix.copy()    
     
     # Actualizar gráficos de tiempo
     for i in range(5):
-        time_lines[i].set_data(x_time, y_time[i])        
+        time_lines[i].set_data(x_time, y_time[i])     
+
         
         # Ajuste dinámico del eje Y        
         #axes[i][0].autoscale()
@@ -275,8 +277,7 @@ def update(frame):
         max_val = 0.25
         axes[i][0].set_xlim(0, N_TIME_SAMPLES)          # Límite fijo en X
         axes[i][0].set_ylim(-max_val, max_val)          # Límite fijo en Y (ajustar según tus datos)
-        axes[i][0].set_xticks(np.linspace(0, N_TIME_SAMPLES, 6))  # 6 ticks en X
-        #axes[i][0].set_yticks(np.linspace(-0.5, 0.5, 5))  
+        axes[i][0].set_xticks(np.linspace(0, N_TIME_SAMPLES, 6))  # 6 ticks en X          
     
     # Actualizar FFT solo si hay cambios
     for i in range(5):
