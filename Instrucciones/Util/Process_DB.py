@@ -95,7 +95,7 @@ def transformar_filas(df, columna="Estimulo"):
 # Definir rutas
 ruta_base = r"D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados"
 ruta_media = os.path.join(ruta_base, "SVM_combined")
-sujetos_validos = ["Sebastian", "Nicolas"]
+sujetos_validos = ["Sebastian", "Nicolas", "All"]
 
 while(True):
     name = input("Ingrese sujeto de prueba: ")
