@@ -18,6 +18,17 @@ def generar_nombre_autoincremental(directorio, base_nombre="total_SVM"):
 
     return os.path.join(directorio, f"{base_nombre}_{nuevo_numero}.csv")
 
+def filtrar_estimulacion(datos):
+    # Encuentra los índices del primer y último estímulo distinto de 0
+    indices_validos = [i for i, fila in enumerate(datos) if fila[0] != '0']
+    if not indices_validos:
+        return []  # No hay estímulos distintos de 0
+
+    inicio = indices_validos[0]
+    fin = indices_validos[-1]
+
+    return datos[inicio:fin+1]
+
 def combinar_csv(archivos, archivo_salida):
     if not archivos:
         print("No hay archivos CSV para combinar.")
@@ -25,18 +36,18 @@ def combinar_csv(archivos, archivo_salida):
 
     with open(archivo_salida, 'w', newline='', encoding='utf-8') as f_out:
         writer = csv.writer(f_out, delimiter=';')
-        
+
         for i, archivo in enumerate(archivos):
             with open(archivo, 'r', newline='', encoding='utf-8') as f_in:
-                reader = csv.reader(f_in, delimiter=';')  
-                
+                reader = csv.reader(f_in, delimiter=';')
+                encabezado = next(reader, None)
+
                 if i == 0:
-                    writer.writerow(next(reader, None))  
-                else:
-                    next(reader, None)
-                
-                for row in reader:
-                    writer.writerow(row)
+                    writer.writerow(encabezado)
+
+                datos = list(reader)
+                datos_filtrados = filtrar_estimulacion(datos)
+                writer.writerows(datos_filtrados)
 
 def modificar_estimulos(df, columna="Estimulo", regla=1):   
     df_modificado = df.copy()
@@ -46,10 +57,14 @@ def modificar_estimulos(df, columna="Estimulo", regla=1):
 
     elif regla == 2:
         df_modificado = df_modificado[df_modificado[columna].isin([0, 1, 2])]
+        columnas_a_conservar = [columna, "C2", "C3", "C4"]
+        df_modificado = df_modificado[columnas_a_conservar]
 
     elif regla == 3:
         df_modificado = df_modificado[df_modificado[columna].isin([0, 3, 4])]
         df_modificado[columna] = df_modificado[columna].replace({3: 2, 4: 1})
+        columnas_a_conservar = [columna, "C1", "C5"]
+        df_modificado = df_modificado[columnas_a_conservar]
 
     return df_modificado
 
