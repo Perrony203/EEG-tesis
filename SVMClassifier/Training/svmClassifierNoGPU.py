@@ -94,14 +94,14 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 # Búsqueda en hiperparámetros
 param_grid = {
     'kernel': ['rbf'],
-    'C': np.logspace(-10, 10, 100),
-    'gamma': np.logspace(-12, 4, 100),
-    'decision_function_shape': ['ovr', 'ovo']
+    'C': np.logspace(-4, 3, 10),
+    'gamma': np.logspace(-12, 4, 10),
+    'decision_function_shape': ['ovr']
     
 }
 
 print("Iniciando entrenamiento")
-grid_search = GridSearchCV(SVC(), param_grid=param_grid, cv=10, scoring='accuracy', n_jobs=-1)
+grid_search = GridSearchCV(SVC(), param_grid=param_grid, cv=3, scoring='accuracy', n_jobs=-1)
 grid_search.fit(X_train, y_train)
 
 print("Mejores parámetros:", grid_search.best_params_)
@@ -117,7 +117,7 @@ train_sizes, train_scores, test_scores = learning_curve(
     X=X_train,
     y=y_train,
     train_sizes=np.linspace(0.1, 1.0, 10),
-    cv=10,
+    cv=3,
     scoring='accuracy',
     n_jobs=-1
 )
