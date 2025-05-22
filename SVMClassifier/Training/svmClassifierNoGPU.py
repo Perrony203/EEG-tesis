@@ -1,4 +1,5 @@
 
+import time
 from micromlgen import port
 import pandas as pd
 import plotly.graph_objects as go
@@ -38,7 +39,7 @@ def leer_csv_a_arreglo(ruta_archivo):
                     # Las columnas restantes se dividen por coma
                     valores = [valor.strip() for valor in columna.split(',')]
                     fila_completa.extend(valores)
-            if len(fila_completa) == 41: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
+            if len(fila_completa) == 25: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
                 datos.append(fila_completa)
             else:
                 continue
@@ -52,7 +53,7 @@ def lista_a_diccionario(lista):
     }
     return diccionario
 
-ruta_csv = r'C:\Users\user\EEG-tesis\Instrucciones\Registros almacenados\SVM_combined\Complete_data\Sebastian\total_SVM_1.csv'
+ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Legs\Sebastian\Legs_SVM_1.csv'
 
 lista_filas = leer_csv_a_arreglo(ruta_csv)
 data_dict = lista_a_diccionario(lista_filas)
@@ -62,7 +63,7 @@ data_dict['target'] = [int(x) for x in data_dict['target']]
 data_dict['data'] = [[float(val) for val in fila] for fila in data_dict['data']]
 
 
-feature_columns = [f"f{i+1}" for i in range(40)]
+feature_columns = [f"f{i+1}" for i in range(24)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
@@ -94,13 +95,21 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 # Búsqueda en hiperparámetros
 param_grid = {
     'kernel': ['rbf'],
-    'C': np.logspace(-4, 3, 10),
+    'C': np.logspace(-10, 10, 10),
+    #'C': np.linspace(1, 10000, 1),
+    #'C': np.logspace(-4, 4, 100),
+    
     'gamma': np.logspace(-12, 4, 10),
-    'decision_function_shape': ['ovr']
+    #'gamma': np.linspace(1, 10000, 1),
+    #'gamma':[np.float64(2.7825594022071143)], 
+    
+    #'decision_function_shape': ['ovr']
     
 }
 
 print("Iniciando entrenamiento")
+inicio = time.time()
+
 grid_search = GridSearchCV(SVC(), param_grid=param_grid, cv=3, scoring='accuracy', n_jobs=-1)
 grid_search.fit(X_train, y_train)
 
@@ -117,7 +126,7 @@ train_sizes, train_scores, test_scores = learning_curve(
     X=X_train,
     y=y_train,
     train_sizes=np.linspace(0.1, 1.0, 10),
-    cv=3,
+    cv=3    ,
     scoring='accuracy',
     n_jobs=-1
 )
@@ -149,7 +158,7 @@ plt.legend(loc="best")
 plt.tight_layout()
 
 best_params = grid_search.best_params_
-model = SVC(C=best_params['C'], gamma=best_params['gamma'], kernel=best_params['kernel'], decision_function_shape=best_params['decision_function_shape'])
+model = SVC(C=best_params['C'], gamma=best_params['gamma'], kernel=best_params['kernel'])#, decision_function_shape=best_params['decision_function_shape'])
 
 model.fit(X_train, y_train)
 
@@ -172,5 +181,9 @@ print("Matriz de confusión (prueba):")
 print(metrics.confusion_matrix(y_test, test_predict))
 
 print(f'Model accuracy: {round(metrics.accuracy_score(y_test, test_predict)*100,2)}%')
+
+fin = time.time()
+
+print("Tiempo de entrenamiento: ", fin-inicio)
 
 plt.show()

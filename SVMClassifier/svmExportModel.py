@@ -38,7 +38,7 @@ def leer_csv_a_arreglo(ruta_archivo):
                     # Las columnas restantes se dividen por coma
                     valores = [valor.strip() for valor in columna.split(',')]
                     fila_completa.extend(valores)
-            if len(fila_completa) == 41: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
+            if len(fila_completa) == 25: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
                 datos.append(fila_completa)
             else:
                 continue
@@ -52,7 +52,7 @@ def lista_a_diccionario(lista):
     }
     return diccionario
 
-ruta_csv = r'D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\Instrucciones\Registros almacenados\SVM_combined\Complete_data\Sebastian\total_SVM_1.csv'
+ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Legs\Sebastian\Legs_SVM_1.csv'
 
 lista_filas = leer_csv_a_arreglo(ruta_csv)
 data_dict = lista_a_diccionario(lista_filas)
@@ -62,11 +62,11 @@ data_dict['target'] = [int(x) for x in data_dict['target']]
 data_dict['data'] = [[float(val) for val in fila] for fila in data_dict['data']]
 
 
-feature_columns = [f"f{i+1}" for i in range(40)]
+feature_columns = [f"f{i+1}" for i in range(24)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-#df = df[df["target"] != 0].reset_index(drop=True)
+df = df[df["target"] != 0].reset_index(drop=True)
 #df = df[df["target"] != 3].reset_index(drop=True)
 #df = df[df["target"] != 2].reset_index(drop=True)
 
@@ -84,10 +84,32 @@ y = LabelEncoder().fit_transform(y)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-model = SVC(C=91029817.79915264, gamma=232.99518105153624, kernel='rbf', decision_function_shape='ovr')
+model = SVC(C=np.float64(359381.36638046405), gamma=np.float64(2.7825594022071143), kernel='rbf', decision_function_shape='ovr')
 model.fit(X_train, y_train)
 
 model_code = port(model)
+
+training_predict = model.predict(X_train)
+
+print("Reporte de clasificación (entrenamiento):")
+print(metrics.classification_report(y_train, training_predict, digits = 3, zero_division=0))
+
+print("Matriz de confusión (entrenamiento):")
+print(metrics.confusion_matrix(y_train, training_predict))
+
+print(f'Model accuracy: {round(metrics.accuracy_score(y_train, training_predict)*100,2)}%')
+
+test_predict = model.predict(X_test)
+
+print("Reporte de clasificación de prueba:")
+print(metrics.classification_report(y_test, test_predict, digits = 3, zero_division=0))
+
+print("Matriz de confusión (prueba):")
+print(metrics.confusion_matrix(y_test, test_predict))
+
+print(f'Model accuracy: {round(metrics.accuracy_score(y_test, test_predict)*100,2)}%')
+
+plt.show()
 
 # Guardar en un archivo .h o .cpp
 ruta_salida = r'D:\Universidad\Trabajo de grado\Desarrollo prototipo\Código\EEG-tesis\SVMClassifier\PSoC\Complete\svmComplete.h'
