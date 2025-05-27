@@ -63,7 +63,7 @@ def lista_a_diccionario(lista):
 
 
 # 1. Load the dataset
-ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Complete_data\Sebastian\total_SVM_1.csv'
+ruta_csv = r'C:\Users\informatica\Desktop\movement_SVM_1.csv'
 
 lista_filas = leer_csv_a_arreglo(ruta_csv)
 data_dict = lista_a_diccionario(lista_filas)

@@ -25,6 +25,7 @@ from sklearn.svm import LinearSVC
 from sklearn.model_selection import GridSearchCV
 
 def leer_csv_a_arreglo(ruta_archivo):
+    posiciones_a_eliminar = [35]  # Índices que deseas eliminar (basados en 0)
 
     datos = []
     with open(ruta_archivo, newline='', encoding='utf-8') as archivo:
@@ -33,14 +34,15 @@ def leer_csv_a_arreglo(ruta_archivo):
             fila_completa = []
             for i, columna in enumerate(fila):
                 if i == 0:
-                    # Primer valor: target (se toma tal cual)
                     fila_completa.append(columna.strip())
                 else:
-                    # Las columnas restantes se dividen por coma
                     valores = [valor.strip() for valor in columna.split(',')]
                     fila_completa.extend(valores)
-            if len(fila_completa) == 25: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
-                datos.append(fila_completa)
+
+            if len(fila_completa) == 41:
+                # Eliminar las posiciones indicadas
+                fila_filtrada = [valor for i, valor in enumerate(fila_completa) if i not in posiciones_a_eliminar]
+                datos.append(fila_filtrada)
             else:
                 continue
     return datos
@@ -53,7 +55,7 @@ def lista_a_diccionario(lista):
     }
     return diccionario
 
-ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Legs\Sebastian\Legs_SVM_1.csv'
+ruta_csv = r'C:\Users\informatica\Desktop\movement_SVM_1.csv'
 
 lista_filas = leer_csv_a_arreglo(ruta_csv)
 data_dict = lista_a_diccionario(lista_filas)
@@ -63,11 +65,11 @@ data_dict['target'] = [int(x) for x in data_dict['target']]
 data_dict['data'] = [[float(val) for val in fila] for fila in data_dict['data']]
 
 
-feature_columns = [f"f{i+1}" for i in range(24)]
+feature_columns = [f"f{i+1}" for i in range(40)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-df = df[df["target"] != 0].reset_index(drop=True)
+#df = df[df["target"] != 0].reset_index(drop=True)
 #df = df[df["target"] != 3].reset_index(drop=True)
 #df = df[df["target"] != 2].reset_index(drop=True)
 
@@ -94,25 +96,23 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 
 # Búsqueda en hiperparámetros
 param_grid = {
-    'kernel': ['poly'],
-    'degree': [3], 
-    'coef0': [1],
-    'C': np.logspace(-20, 3, 10),
+    'kernel': ['rbf'],
+    'C': np.logspace(-10, 10, 10),
     #'C': np.linspace(1, 10000, 1),
     #'C': np.logspace(-4, 4, 100),
     
-    'gamma': np.logspace(-20, 3, 10),
+    'gamma': np.logspace(-12, 4, 10),
     #'gamma': np.linspace(1, 10000, 1),
     #'gamma':[np.float64(2.7825594022071143)], 
     
     #'decision_function_shape': ['ovr']
-    
 }
 
 print("Iniciando entrenamiento")
 inicio = time.time()
 
 grid_search = GridSearchCV(SVC(), param_grid=param_grid, cv=3, scoring='accuracy', n_jobs=-1)
+
 grid_search.fit(X_train, y_train)
 
 print("Mejores parámetros:", grid_search.best_params_)
