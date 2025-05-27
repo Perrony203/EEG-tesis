@@ -1,3 +1,13 @@
+import pandas as pd
+from sklearn.svm import SVC
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.inspection import permutation_importance
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+from sklearn.calibration import LabelEncoder
+
+import time
 from micromlgen import port
 import pandas as pd
 import plotly.graph_objects as go
@@ -11,7 +21,7 @@ import warnings
 from sklearn.svm import SVC
 from sklearn.calibration import LabelEncoder
 from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split         
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn.metrics import make_scorer, roc_auc_score
@@ -21,7 +31,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import learning_curve
 from sklearn.svm import LinearSVC
 from sklearn.model_selection import GridSearchCV
-from sklearn.pipeline import make_pipeline
 
 def leer_csv_a_arreglo(ruta_archivo):
 
@@ -38,7 +47,7 @@ def leer_csv_a_arreglo(ruta_archivo):
                     # Las columnas restantes se dividen por coma
                     valores = [valor.strip() for valor in columna.split(',')]
                     fila_completa.extend(valores)
-            if len(fila_completa) == 25: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
+            if len(fila_completa) == 41: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
                 datos.append(fila_completa)
             else:
                 continue
@@ -52,7 +61,9 @@ def lista_a_diccionario(lista):
     }
     return diccionario
 
-ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Legs\Sebastian\Legs_SVM_1.csv'
+
+# 1. Load the dataset
+ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Complete_data\Sebastian\total_SVM_1.csv'
 
 lista_filas = leer_csv_a_arreglo(ruta_csv)
 data_dict = lista_a_diccionario(lista_filas)
@@ -62,59 +73,52 @@ data_dict['target'] = [int(x) for x in data_dict['target']]
 data_dict['data'] = [[float(val) for val in fila] for fila in data_dict['data']]
 
 
-feature_columns = [f"f{i+1}" for i in range(24)]
+feature_columns = [f"f{i+1}" for i in range(40)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-df = df[df["target"] != 0].reset_index(drop=True)
-#df = df[df["target"] != 3].reset_index(drop=True)
-#df = df[df["target"] != 2].reset_index(drop=True)
+df = df[df["target"] != 0].reset_index(drop=True)           #idle
+df = df[df["target"] != 1].reset_index(drop=True)           #pierna derecha
+df = df[df["target"] != 2].reset_index(drop=True)           #pierna derecha
 
-# print("DataFrame head:")
-#print(df.head())
-print("Cantidad de muestras luego del filtrado:", df.shape[0])
+
 scaler = StandardScaler()
-df[feature_columns] = scaler.fit_transform(df[feature_columns])
-# print(df.head())
 
+df[feature_columns] = scaler.fit_transform(df[feature_columns])
+# Encode labels and standardize features
 X = df[feature_columns].to_numpy()
 y = df['target'].to_numpy()
 
 y = LabelEncoder().fit_transform(y)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# 3. Train/test split (for stability in permutation)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-model = SVC(C=np.float64(359381.36638046405), gamma=np.float64(2.7825594022071143), kernel='rbf', decision_function_shape='ovr')
+# 4. Define and train SVM model with RBF kernel
+model = make_pipeline(
+    StandardScaler(),
+    SVC(C=3.359818286283774, gamma=1438.44988828766, kernel='rbf')
+)
 model.fit(X_train, y_train)
 
-model_code = port(model)
+# 5. Compute permutation importance
+result = permutation_importance(model, X_test, y_test, n_repeats=10, random_state=42, n_jobs=-1)
 
-training_predict = model.predict(X_train)
+# 6. Create importance DataFrame
+feature_importance = pd.DataFrame({
+    'Feature': feature_columns,
+    'Importance': result.importances_mean,
+    'Std': result.importances_std
+}).sort_values('Importance', ascending=False)
 
-print("Reporte de clasificación (entrenamiento):")
-print(metrics.classification_report(y_train, training_predict, digits = 3, zero_division=0))
+# 7. Show top features
+print("Feature importance (sorted):\n", feature_importance)
 
-print("Matriz de confusión (entrenamiento):")
-print(metrics.confusion_matrix(y_train, training_predict))
-
-print(f'Model accuracy: {round(metrics.accuracy_score(y_train, training_predict)*100,2)}%')
-
-test_predict = model.predict(X_test)
-
-print("Reporte de clasificación de prueba:")
-print(metrics.classification_report(y_test, test_predict, digits = 3, zero_division=0))
-
-print("Matriz de confusión (prueba):")
-print(metrics.confusion_matrix(y_test, test_predict))
-
-print(f'Model accuracy: {round(metrics.accuracy_score(y_test, test_predict)*100,2)}%')
-
+# 8. Plot importance
+plt.figure(figsize=(10, 6))
+plt.barh(feature_importance['Feature'], feature_importance['Importance'])
+plt.xlabel('Mean Importance')
+plt.title('Permutation Feature Importance (RBF SVM)')
+plt.gca().invert_yaxis()
+plt.tight_layout()
 plt.show()
-
-# Guardar en un archivo .h o .cpp
-ruta_salida = r'C:\Users\informatica\Downloads\SVM\svmComplete.h'
-
-with open(ruta_salida, 'w') as f:
-    f.write(model_code)
-
-print(f"Modelo exportado exitosamente a: {ruta_salida}")

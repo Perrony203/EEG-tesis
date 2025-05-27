@@ -94,12 +94,14 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 
 # Búsqueda en hiperparámetros
 param_grid = {
-    'kernel': ['rbf'],
-    'C': np.logspace(-10, 10, 10),
+    'kernel': ['poly'],
+    'degree': [3], 
+    'coef0': [1],
+    'C': np.logspace(-20, 3, 10),
     #'C': np.linspace(1, 10000, 1),
     #'C': np.logspace(-4, 4, 100),
     
-    'gamma': np.logspace(-12, 4, 10),
+    'gamma': np.logspace(-20, 3, 10),
     #'gamma': np.linspace(1, 10000, 1),
     #'gamma':[np.float64(2.7825594022071143)], 
     
