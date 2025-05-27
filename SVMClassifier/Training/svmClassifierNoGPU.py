@@ -25,7 +25,7 @@ from sklearn.svm import LinearSVC
 from sklearn.model_selection import GridSearchCV
 
 def leer_csv_a_arreglo(ruta_archivo):
-    posiciones_a_eliminar = [35]  # Índices que deseas eliminar (basados en 0)
+    posiciones_a_eliminar = [35, 39, 10, 13, 9]  # Índices que deseas eliminar (basados en 0 restar 1 al de la grafica)
 
     datos = []
     with open(ruta_archivo, newline='', encoding='utf-8') as archivo:
@@ -55,7 +55,7 @@ def lista_a_diccionario(lista):
     }
     return diccionario
 
-ruta_csv = r'C:\Users\informatica\Desktop\movement_SVM_1.csv'
+ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Complete_data\Sebastian\total_SVM_1.csv'
 
 lista_filas = leer_csv_a_arreglo(ruta_csv)
 data_dict = lista_a_diccionario(lista_filas)
@@ -65,13 +65,13 @@ data_dict['target'] = [int(x) for x in data_dict['target']]
 data_dict['data'] = [[float(val) for val in fila] for fila in data_dict['data']]
 
 
-feature_columns = [f"f{i+1}" for i in range(40)]
+feature_columns = [f"f{i+1}" for i in range(35)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-#df = df[df["target"] != 0].reset_index(drop=True)
-#df = df[df["target"] != 3].reset_index(drop=True)
-#df = df[df["target"] != 2].reset_index(drop=True)
+df = df[df["target"] != 0].reset_index(drop=True)
+df = df[df["target"] != 1].reset_index(drop=True)
+df = df[df["target"] != 2].reset_index(drop=True)
 
 # print("DataFrame head:")
 #print(df.head())
@@ -97,11 +97,11 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 # Búsqueda en hiperparámetros
 param_grid = {
     'kernel': ['rbf'],
-    'C': np.logspace(-10, 10, 10),
+    'C': np.logspace(-10, 10, 50),
     #'C': np.linspace(1, 10000, 1),
     #'C': np.logspace(-4, 4, 100),
     
-    'gamma': np.logspace(-12, 4, 10),
+    'gamma': np.logspace(-12, 4, 50),
     #'gamma': np.linspace(1, 10000, 1),
     #'gamma':[np.float64(2.7825594022071143)], 
     
