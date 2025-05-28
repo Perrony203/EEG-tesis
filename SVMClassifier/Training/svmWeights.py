@@ -33,7 +33,7 @@ from sklearn.svm import LinearSVC
 from sklearn.model_selection import GridSearchCV
 
 def leer_csv_a_arreglo(ruta_archivo):
-    posiciones_a_eliminar = [11,8,5,2]  # Índices que deseas eliminar (basados en 0 restar 1 al de la grafica)
+    posiciones_a_eliminar = []  # Índices que deseas eliminar (basados en 0 restar 1 al de la grafica)
 
     datos = []
     with open(ruta_archivo, newline='', encoding='utf-8') as archivo:
@@ -75,9 +75,12 @@ data_dict['target'] = [int(x) for x in data_dict['target']]
 data_dict['data'] = [[float(val) for val in fila] for fila in data_dict['data']]
 
 
-feature_columns = [f"f{i+1}" for i in range(12)]
+feature_columns = [f"f{i+1}" for i in range(16)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
+
+columnas_a_eliminar = ['f2', 'f5', 'f10']       #Verdadera manera de quitar columnas
+df = df.drop(columns=columnas_a_eliminar)
 
 df = df[df["target"] != 0].reset_index(drop=True)           #idle
 #df = df[df["target"] != 1].reset_index(drop=True)           #pierna derecha
