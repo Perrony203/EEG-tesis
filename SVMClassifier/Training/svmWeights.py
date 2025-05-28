@@ -79,8 +79,11 @@ feature_columns = [f"f{i+1}" for i in range(16)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-columnas_a_eliminar = ['f2', 'f5', 'f10']       #Verdadera manera de quitar columnas
+columnas_a_eliminar = ['f11']       #Verdadera manera de quitar columnas
 df = df.drop(columns=columnas_a_eliminar)
+
+# Actualizar lista de características
+feature_columns = [col for col in df.columns if col.startswith('f')]
 
 df = df[df["target"] != 0].reset_index(drop=True)           #idle
 #df = df[df["target"] != 1].reset_index(drop=True)           #pierna derecha
@@ -102,7 +105,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 # 4. Define and train SVM model with RBF kernel
 model = make_pipeline(
     StandardScaler(),
-    SVC(C=37275.93720314938, gamma=232.99518105153624, kernel='rbf')
+    SVC(C=2023589.6477251637, gamma=494.1713361323818, kernel='rbf')
 )
 model.fit(X_train, y_train)
 

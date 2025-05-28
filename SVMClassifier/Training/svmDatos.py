@@ -69,7 +69,7 @@ feature_columns = [f"f{i+1}" for i in range(16)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-columnas_a_eliminar = ['f2', 'f5', 'f10']
+columnas_a_eliminar = ['f12']
 df = df.drop(columns=columnas_a_eliminar)
 
 

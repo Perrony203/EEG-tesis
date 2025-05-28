@@ -69,8 +69,11 @@ feature_columns = [f"f{i+1}" for i in range(16)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-columnas_a_eliminar = ['f2', 'f5', 'f10']       #Verdadera manera de quitar columnas
+columnas_a_eliminar = ['f12']       #Verdadera manera de quitar columnas
 df = df.drop(columns=columnas_a_eliminar)
+
+# Actualizar lista de características
+feature_columns = [col for col in df.columns if col.startswith('f')]
 
 df = df[df["target"] != 0].reset_index(drop=True)
 #df = df[df["target"] != 1].reset_index(drop=True)
