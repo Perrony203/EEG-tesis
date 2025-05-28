@@ -69,7 +69,7 @@ feature_columns = [f"f{i+1}" for i in range(16)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-columnas_a_eliminar = ['f12']       #Verdadera manera de quitar columnas
+columnas_a_eliminar = ['f9', 'f6', 'f2', 'f15']       #Verdadera manera de quitar columnas
 df = df.drop(columns=columnas_a_eliminar)
 
 # Actualizar lista de características
@@ -103,11 +103,11 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 # Búsqueda en hiperparámetros
 param_grid = {
     'kernel': ['rbf'],
-    'C': np.logspace(-10, 7, 50),
+    'C': np.logspace(-10, 10, 30),
     #'C': np.linspace(1, 10000, 1),
     #'C': np.logspace(-4, 4, 100),
     
-    'gamma': np.logspace(-12, 4, 50),
+    'gamma': np.logspace(-12, 4, 30),
     #'gamma': np.linspace(1, 10000, 1),
     #'gamma':[np.float64(2.7825594022071143)], 
     
