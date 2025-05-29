@@ -47,7 +47,7 @@ def leer_csv_a_arreglo(ruta_archivo):
                     valores = [valor.strip() for valor in columna.split(',')]
                     fila_completa.extend(valores)
 
-            if len(fila_completa) == 17: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
+            if len(fila_completa) == 41: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
                 # Eliminar las posiciones indicadas
                 fila_filtrada = [valor for i, valor in enumerate(fila_completa) if i not in posiciones_a_eliminar]
                 datos.append(fila_filtrada)
@@ -65,7 +65,7 @@ def lista_a_diccionario(lista):
 
 
 # 1. Load the dataset
-ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Arms\Sebastian\Arms_SVM_1.csv'
+ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Complete_data\Sebastian\total_SVM_1.csv'
 
 lista_filas = leer_csv_a_arreglo(ruta_csv)
 data_dict = lista_a_diccionario(lista_filas)
@@ -75,19 +75,19 @@ data_dict['target'] = [int(x) for x in data_dict['target']]
 data_dict['data'] = [[float(val) for val in fila] for fila in data_dict['data']]
 
 
-feature_columns = [f"f{i+1}" for i in range(16)]
+feature_columns = [f"f{i+1}" for i in range(40)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-columnas_a_eliminar = ['f4', 'f5', 'f6', 'f7', 'f8', 'f11', 'f12', 'f13', 'f14', 'f15', 'f16']        #Verdadera manera de quitar columnas
+columnas_a_eliminar = ['f4', 'f5', 'f6', 'f7', 'f8', 'f10', 'f12', 'f13', 'f14', 'f15', 'f16', 'f20', 'f21', 'f22', 'f23', 'f24', 'f27', 'f28', 'f29', 'f30', 'f31', 'f32', 'f35', 'f36', 'f37', 'f38', 'f39', 'f40']       #Verdadera manera de quitar columnas
 df = df.drop(columns=columnas_a_eliminar)
 
 # Actualizar lista de características
 feature_columns = [col for col in df.columns if col.startswith('f')]
 
 df = df[df["target"] != 0].reset_index(drop=True)           #idle
-#df = df[df["target"] != 1].reset_index(drop=True)           #pierna derecha
-#df = df[df["target"] != 2].reset_index(drop=True)           #pierna derecha
+df = df[df["target"] != 1].reset_index(drop=True)           #pierna derecha
+df = df[df["target"] != 2].reset_index(drop=True)           #pierna derecha
 
 
 scaler = StandardScaler()
@@ -105,7 +105,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 # 4. Define and train SVM model with RBF kernel
 model = make_pipeline(
     StandardScaler(),
-    SVC(C=259.2943797404678, gamma=10000.0, kernel='rbf')
+    SVC(C=23950266.199874908, gamma=221.22162910704503, kernel='rbf')
 )
 model.fit(X_train, y_train)
 

@@ -10,6 +10,7 @@ import os
 import csv
 import warnings
 
+from collections import Counter
 
 import seaborn as sns
 
@@ -42,7 +43,7 @@ def leer_csv_a_arreglo(ruta_archivo):
                     valores = [valor.strip() for valor in columna.split(',')]
                     fila_completa.extend(valores)
 
-            if len(fila_completa) == 17: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
+            if len(fila_completa) == 25: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
                 # Eliminar las posiciones indicadas
                 fila_filtrada = [valor for i, valor in enumerate(fila_completa) if i not in posiciones_a_eliminar]
                 datos.append(fila_filtrada)
@@ -58,7 +59,7 @@ def lista_a_diccionario(lista):
     }
     return diccionario
 
-ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Arms\Sebastian\Arms_SVM_1.csv'
+ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Legs\Sebastian\Legs_SVM_1.csv'
 
 lista_filas = leer_csv_a_arreglo(ruta_csv)
 data_dict = lista_a_diccionario(lista_filas)
@@ -68,12 +69,16 @@ data_dict['target'] = [int(x) for x in data_dict['target']]
 data_dict['data'] = [[float(val) for val in fila] for fila in data_dict['data']]
 
 
-feature_columns = [f"f{i+1}" for i in range(16)]
+feature_columns = [f"f{i+1}" for i in range(24)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-columnas_a_eliminar = ['f4', 'f5', 'f6', 'f7', 'f8', 'f11', 'f12', 'f13', 'f14', 'f15', 'f16']
+columnas_a_eliminar = ['f18', 'f22', 'f10', 'f2', 'f8', 'f16']
 df = df.drop(columns=columnas_a_eliminar)
+
+df = df[df["target"] != 0].reset_index(drop=True)
+#df = df[df["target"] != 1].reset_index(drop=True)
+#df = df[df["target"] != 2].reset_index(drop=True)
 
 # Actualizar lista de características
 feature_columns = [col for col in df.columns if col.startswith('f')]
@@ -83,6 +88,43 @@ feature_columns = [col for col in df.columns if col.startswith('f')]
 # Matriz de correlación
 corr_matrix = df[feature_columns].corr()
 
+
+
+# Extrae los pares de características (solo una vez cada par, usando la parte superior de la matriz)
+correlaciones = []
+
+for i in range(len(corr_matrix.columns)):
+    for j in range(i + 1, len(corr_matrix.columns)):
+        col1 = corr_matrix.columns[i]
+        col2 = corr_matrix.columns[j]
+        corr_val = corr_matrix.iloc[i, j]
+        correlaciones.append((col1, col2, corr_val))
+
+# Ordena por valor absoluto de la correlación
+correlaciones_ordenadas = sorted(correlaciones, key=lambda x: abs(x[2]), reverse=True)
+
+# Filtra pares con correlación fuerte (por ejemplo, > 0.9 o < -0.9)
+umbral = 0.9
+correlaciones_fuertes = [(c1, c2, round(val, 3)) for c1, c2, val in correlaciones_ordenadas if abs(val) > umbral]
+
+# Imprime
+print("Pares de características con alta correlación (> 0.9 o < -0.9):")
+for c1, c2, val in correlaciones_fuertes:
+    print(f"{c1} y {c2}: {val}")
+
+
+# Contador de ocurrencias por característica
+
+contador_pares = Counter()
+
+for c1, c2, _ in correlaciones_fuertes:
+    contador_pares[c1] += 1
+    contador_pares[c2] += 1
+
+# Imprime resumen por característica
+print("\nNúmero de pares altamente correlacionados por característica:")
+for caracteristica, cuenta in sorted(contador_pares.items(), key=lambda x: x[1], reverse=True):
+    print(f"{caracteristica}: {cuenta}")
 
 
 # Calcular la matriz de correlación
