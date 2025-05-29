@@ -79,7 +79,7 @@ feature_columns = [f"f{i+1}" for i in range(16)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-columnas_a_eliminar = [ 'f9', 'f6']       #Verdadera manera de quitar columnas
+columnas_a_eliminar = ['f4', 'f5', 'f6', 'f7', 'f8', 'f11', 'f12', 'f13', 'f14', 'f15', 'f16']        #Verdadera manera de quitar columnas
 df = df.drop(columns=columnas_a_eliminar)
 
 # Actualizar lista de características
@@ -105,7 +105,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 # 4. Define and train SVM model with RBF kernel
 model = make_pipeline(
     StandardScaler(),
-    SVC(C=3562247.8902624515, gamma=17.433288221999874, kernel='rbf')
+    SVC(C=259.2943797404678, gamma=10000.0, kernel='rbf')
 )
 model.fit(X_train, y_train)
 

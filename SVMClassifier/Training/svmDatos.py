@@ -10,6 +10,9 @@ import os
 import csv
 import warnings
 
+
+import seaborn as sns
+
 from sklearn.svm import SVC
 from sklearn.calibration import LabelEncoder
 from sklearn.datasets import load_iris
@@ -69,8 +72,43 @@ feature_columns = [f"f{i+1}" for i in range(16)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-columnas_a_eliminar = ['f11', 'f9', 'f6','f2'] 
+columnas_a_eliminar = ['f4', 'f5', 'f6', 'f7', 'f8', 'f11', 'f12', 'f13', 'f14', 'f15', 'f16']
 df = df.drop(columns=columnas_a_eliminar)
 
+# Actualizar lista de características
+feature_columns = [col for col in df.columns if col.startswith('f')]
 
-print(df)
+#print(df)
+
+# Matriz de correlación
+corr_matrix = df[feature_columns].corr()
+
+
+
+# Calcular la matriz de correlación
+corr_matrix = df[feature_columns].corr().abs()
+
+# Seleccionar la parte superior del triángulo de la matriz
+upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+
+# Encuentra las columnas con una correlación mayor a 0.9
+columnas_correlacionadas = [column for column in upper.columns if any(upper[column] > 0.9)]
+
+print (columnas_correlacionadas)
+
+# Elimina columnas altamente correlacionadas
+df = df.drop(columns=columnas_correlacionadas)
+
+# Actualiza las columnas de características
+feature_columns = [col for col in df.columns if col.startswith('f')]
+
+
+
+
+# Visualización con mapa de calor
+plt.figure(figsize=(12, 10))
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+plt.title("Matriz de correlación entre características")
+plt.show()
+
+print (df)
