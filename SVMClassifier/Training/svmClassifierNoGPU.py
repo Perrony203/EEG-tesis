@@ -39,7 +39,7 @@ def leer_csv_a_arreglo(ruta_archivo):
                     valores = [valor.strip() for valor in columna.split(',')]
                     fila_completa.extend(valores)
 
-            if len(fila_completa) == 25: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
+            if len(fila_completa) == 41: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
                 # Eliminar las posiciones indicadas
                 fila_filtrada = [valor for i, valor in enumerate(fila_completa) if i not in posiciones_a_eliminar]
                 datos.append(fila_filtrada)
@@ -55,7 +55,7 @@ def lista_a_diccionario(lista):
     }
     return diccionario
 
-ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Legs\Sebastian\Legs_SVM_1.csv'
+ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Left-right\Sebastian\LEFT-RIGHT_SVM_1.csv'
 
 lista_filas = leer_csv_a_arreglo(ruta_csv)
 data_dict = lista_a_diccionario(lista_filas)
@@ -65,11 +65,11 @@ data_dict['target'] = [int(x) for x in data_dict['target']]
 data_dict['data'] = [[float(val) for val in fila] for fila in data_dict['data']]
 
 
-feature_columns = [f"f{i+1}" for i in range(24)]
+feature_columns = [f"f{i+1}" for i in range(40)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-columnas_a_eliminar = ['f18', 'f22', 'f10', 'f2', 'f8', 'f16']     #Verdadera manera de quitar columnas
+columnas_a_eliminar = ['f6','f26','f32','f8','f14','f18','f16','f38','f31','f20','f35','f37','f40','f13','f23','f7','f1','f15','f21','f25']     #Verdadera manera de quitar columnas
 df = df.drop(columns=columnas_a_eliminar)
 
 # Actualizar lista de características
@@ -117,7 +117,7 @@ param_grid = {
 print("Iniciando entrenamiento")
 inicio = time.time()
 
-grid_search = GridSearchCV(SVC(), param_grid=param_grid, cv=7, scoring='accuracy', n_jobs=-1)
+grid_search = GridSearchCV(SVC(), param_grid=param_grid, cv=3, scoring='accuracy', n_jobs=-1)
 
 grid_search.fit(X_train, y_train)
 
@@ -134,7 +134,7 @@ train_sizes, train_scores, test_scores = learning_curve(
     X=X_train,
     y=y_train,
     train_sizes=np.linspace(0.1, 1.0, 10),
-    cv=7    ,
+    cv=3    ,
     scoring='accuracy',
     n_jobs=-1
 )
