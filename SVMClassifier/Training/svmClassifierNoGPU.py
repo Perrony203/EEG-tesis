@@ -103,11 +103,11 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 # Búsqueda en hiperparámetros
 param_grid = {
     'kernel': ['rbf'],
-    'C': np.logspace(-10, 10, 10),
+    'C': np.logspace(-1, 10, 80),
     #'C': np.linspace(1, 10000, 1),
     #'C': np.logspace(-4, 4, 100),
     
-    'gamma': np.logspace(-12, 4, 10),
+    'gamma': np.logspace(-5, 4, 80),
     #'gamma': np.linspace(1, 10000, 1),
     #'gamma':[np.float64(2.7825594022071143)], 
     
@@ -117,7 +117,7 @@ param_grid = {
 print("Iniciando entrenamiento")
 inicio = time.time()
 
-grid_search = GridSearchCV(SVC(), param_grid=param_grid, cv=3, scoring='accuracy', n_jobs=-1)
+grid_search = GridSearchCV(SVC(), param_grid=param_grid, cv=5, scoring='accuracy', n_jobs=-1)
 
 grid_search.fit(X_train, y_train)
 
@@ -134,7 +134,7 @@ train_sizes, train_scores, test_scores = learning_curve(
     X=X_train,
     y=y_train,
     train_sizes=np.linspace(0.1, 1.0, 10),
-    cv=3    ,
+    cv=5    ,
     scoring='accuracy',
     n_jobs=-1
 )
