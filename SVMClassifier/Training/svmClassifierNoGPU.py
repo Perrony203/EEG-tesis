@@ -55,7 +55,7 @@ def lista_a_diccionario(lista):
     }
     return diccionario
 
-ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Left-right\Sebastian\LEFT-RIGHT_SVM_1.csv'
+ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Idle-movement\Sebastian\movement_SVM_1.csv'
 
 lista_filas = leer_csv_a_arreglo(ruta_csv)
 data_dict = lista_a_diccionario(lista_filas)
@@ -69,13 +69,13 @@ feature_columns = [f"f{i+1}" for i in range(40)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-columnas_a_eliminar = ['f6','f26','f32','f8','f14','f18','f16','f38','f31','f20','f35','f37','f40','f13','f23','f7','f1','f15','f21','f25']     #Verdadera manera de quitar columnas
+columnas_a_eliminar = ['f35','f19','f33','f36','f28','f6','f26','f3','f18','f12', 'f24','f9','f10','f8','f22','f17','f2','f7','f30','f1','f29','f32','f40','f37','f38','f31','f39','f23','f15','f16','f20','f13','f14','f4']    #Verdadera manera de quitar columnas
 df = df.drop(columns=columnas_a_eliminar)
 
 # Actualizar lista de características
 feature_columns = [col for col in df.columns if col.startswith('f')]
 
-df = df[df["target"] != 0].reset_index(drop=True)
+#df = df[df["target"] != 0].reset_index(drop=True)
 #df = df[df["target"] != 1].reset_index(drop=True)
 #df = df[df["target"] != 2].reset_index(drop=True)
 
@@ -103,7 +103,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 # Búsqueda en hiperparámetros
 param_grid = {
     'kernel': ['rbf'],
-    'C': np.logspace(-1, 10, 80),
+    'C': np.logspace(-10, 10, 80),
     #'C': np.linspace(1, 10000, 1),
     #'C': np.logspace(-4, 4, 100),
     
@@ -117,7 +117,7 @@ param_grid = {
 print("Iniciando entrenamiento")
 inicio = time.time()
 
-grid_search = GridSearchCV(SVC(), param_grid=param_grid, cv=5, scoring='accuracy', n_jobs=-1)
+grid_search = GridSearchCV(SVC(), param_grid=param_grid, cv=3, scoring='accuracy', n_jobs=-1)
 
 grid_search.fit(X_train, y_train)
 
@@ -134,7 +134,7 @@ train_sizes, train_scores, test_scores = learning_curve(
     X=X_train,
     y=y_train,
     train_sizes=np.linspace(0.1, 1.0, 10),
-    cv=5    ,
+    cv=3    ,
     scoring='accuracy',
     n_jobs=-1
 )

@@ -59,7 +59,7 @@ def lista_a_diccionario(lista):
     }
     return diccionario
 
-ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Left-right\Sebastian\LEFT-RIGHT_SVM_1.csv'
+ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Idle-movement\Sebastian\movement_SVM_1.csv'
 
 lista_filas = leer_csv_a_arreglo(ruta_csv)
 data_dict = lista_a_diccionario(lista_filas)
@@ -73,10 +73,10 @@ feature_columns = [f"f{i+1}" for i in range(40)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-columnas_a_eliminar = ['f6','f26','f32','f8','f14','f18','f16','f38','f31','f20','f35','f37','f40','f13','f23','f7','f1','f15','f21','f25']
+columnas_a_eliminar = ['f35','f19','f33','f36','f28','f6','f26','f3','f18','f12', 'f24','f9','f10','f8','f22','f17','f2','f7','f30','f1','f29','f32','f40','f37','f38','f31','f39','f23','f15','f16','f20','f13','f14','f4']
 df = df.drop(columns=columnas_a_eliminar)
 
-df = df[df["target"] != 0].reset_index(drop=True)
+#df = df[df["target"] != 0].reset_index(drop=True)
 #df = df[df["target"] != 1].reset_index(drop=True)
 #df = df[df["target"] != 2].reset_index(drop=True)
 
@@ -104,7 +104,7 @@ for i in range(len(corr_matrix.columns)):
 correlaciones_ordenadas = sorted(correlaciones, key=lambda x: abs(x[2]), reverse=True)
 
 # Filtra pares con correlación fuerte (por ejemplo, > 0.9 o < -0.9)
-umbral = 0.9999
+umbral = 0.9
 correlaciones_fuertes = [(c1, c2, round(val, 3)) for c1, c2, val in correlaciones_ordenadas if abs(val) > umbral]
 
 # Imprime
@@ -144,7 +144,7 @@ corr_matrix = df[feature_columns].corr().abs()
 upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
 
 # Encuentra las columnas con una correlación mayor a 0.9
-columnas_correlacionadas = [column for column in upper.columns if any(upper[column] > 0.9999)]
+columnas_correlacionadas = [column for column in upper.columns if any(upper[column] > 0.9)]
 
 print (columnas_correlacionadas)
 
