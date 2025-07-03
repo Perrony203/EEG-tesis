@@ -59,7 +59,7 @@ def lista_a_diccionario(lista):
     }
     return diccionario
 
-ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Left-right\Sebastian\LEFT-RIGHT_SVM_1.csv'
+ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Idle-movement\Sebastian\movement_SVM_1.csv'
 
 lista_filas = leer_csv_a_arreglo(ruta_csv)
 data_dict = lista_a_diccionario(lista_filas)
@@ -73,8 +73,8 @@ feature_columns = [f"f{i+1}" for i in range(40)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-columnas_a_eliminar = ['f6','f26','f32','f8','f14','f18','f16','f38','f31','f20','f35','f37','f40','f13','f23','f7','f1','f15','f21','f25']
-df = df.drop(columns=columnas_a_eliminar)
+# columnas_a_eliminar = ['f6','f26','f32','f8','f14','f18','f16','f38','f31','f20','f35','f37','f40','f13','f23','f7','f1','f15','f21','f25']
+# df = df.drop(columns=columnas_a_eliminar)
 
 df = df[df["target"] != 0].reset_index(drop=True)
 #df = df[df["target"] != 1].reset_index(drop=True)
@@ -84,6 +84,11 @@ df = df[df["target"] != 0].reset_index(drop=True)
 feature_columns = [col for col in df.columns if col.startswith('f')]
 
 #print(df)
+
+
+scaler = StandardScaler()
+
+df[feature_columns] = scaler.fit_transform(df[feature_columns])
 
 # Matriz de correlación
 corr_matrix = df[feature_columns].corr()

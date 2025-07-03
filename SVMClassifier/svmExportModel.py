@@ -38,7 +38,7 @@ def leer_csv_a_arreglo(ruta_archivo):
                     # Las columnas restantes se dividen por coma
                     valores = [valor.strip() for valor in columna.split(',')]
                     fila_completa.extend(valores)
-            if len(fila_completa) == 25: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
+            if len(fila_completa) == 41: #Se ponen 17 porque son 2 canales y 1 estimulo. Si fueran los datos completos serían 41 y para 3 canales 25
                 datos.append(fila_completa)
             else:
                 continue
@@ -52,7 +52,7 @@ def lista_a_diccionario(lista):
     }
     return diccionario
 
-ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Legs\Sebastian\Legs_SVM_1.csv'
+ruta_csv = r'Instrucciones\Registros almacenados\SVM_combined\Idle-movement\Sebastian\movement_SVM_1.csv'
 
 lista_filas = leer_csv_a_arreglo(ruta_csv)
 data_dict = lista_a_diccionario(lista_filas)
@@ -62,11 +62,11 @@ data_dict['target'] = [int(x) for x in data_dict['target']]
 data_dict['data'] = [[float(val) for val in fila] for fila in data_dict['data']]
 
 
-feature_columns = [f"f{i+1}" for i in range(24)]
+feature_columns = [f"f{i+1}" for i in range(40)]
 df = pd.DataFrame(data_dict['data'], columns=feature_columns)
 df['target'] = data_dict['target']
 
-df = df[df["target"] != 0].reset_index(drop=True)
+#df = df[df["target"] != 0].reset_index(drop=True)
 #df = df[df["target"] != 3].reset_index(drop=True)
 #df = df[df["target"] != 2].reset_index(drop=True)
 
@@ -82,9 +82,9 @@ y = df['target'].to_numpy()
 
 y = LabelEncoder().fit_transform(y)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-model = SVC(C=np.float64(359381.36638046405), gamma=np.float64(2.7825594022071143), kernel='rbf', decision_function_shape='ovr')
+model = SVC(C=np.float64(0.021544346900318832), gamma=np.float64(0.1), kernel='rbf')
 model.fit(X_train, y_train)
 
 model_code = port(model)
@@ -112,7 +112,7 @@ print(f'Model accuracy: {round(metrics.accuracy_score(y_test, test_predict)*100,
 plt.show()
 
 # Guardar en un archivo .h o .cpp
-ruta_salida = r'C:\Users\informatica\Downloads\SVM\svmComplete.h'
+ruta_salida = r'SVMClassifier\PSoC\Complete\svmComplete.h'
 
 with open(ruta_salida, 'w') as f:
     f.write(model_code)
