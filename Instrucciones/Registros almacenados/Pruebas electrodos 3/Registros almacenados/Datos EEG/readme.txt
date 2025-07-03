@@ -1,0 +1,3 @@
+Los registros corresponden a las características de las señales en los cinco canales.
+Están guardados de la siguiente manera:
+Tiempo incial ventana de tiempo; Tiempo final ventana de tiempo; característica_1_canal_1,... , característica_5_canal_1; característica_1_canal_2,... , característica_5_canal_2,...
